@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG   -rdynamic CMakeFiles/test_se2.dir/sophus/test_se2.cpp.o  -o test_se2 -Wl,-rpath,"/home/x/Desktop/sensor fusion/third part/Sophus/build" libSophus.so 

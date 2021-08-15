@@ -1,0 +1,13 @@
+# Extra CMake definitions for GTSAM
+
+# All version variables are handled by GTSAMConfigVersion.cmake, except these
+# two below. We continue to set them here in case someone uses them
+set (GTSAM_VERSION_NUMERIC @GTSAM_VERSION_NUMERIC@)
+set (GTSAM_VERSION_STRING "@GTSAM_VERSION_STRING@")
+
+set (GTSAM_USE_TBB @GTSAM_USE_TBB@)
+set (GTSAM_DEFAULT_ALLOCATOR @GTSAM_DEFAULT_ALLOCATOR@)
+
+if("@GTSAM_INSTALL_CYTHON_TOOLBOX@")
+  list(APPEND GTSAM_EIGENCY_INSTALL_PATH "@GTSAM_EIGENCY_INSTALL_PATH@")
+endif()

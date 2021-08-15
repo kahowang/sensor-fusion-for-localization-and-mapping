@@ -1,0 +1,1 @@
+/usr/bin/c++   -Wall -Wextra -Wfloat-conversion -O3 -DNDEBUG   CMakeFiles/example-GravityModel.dir/example-GravityModel.cpp.o  -o example-GravityModel -Wl,-rpath,"/home/x/sensor fusion/third part/GeographicLib-1.52/build/src" ../src/libGeographic.so.19.2.0 

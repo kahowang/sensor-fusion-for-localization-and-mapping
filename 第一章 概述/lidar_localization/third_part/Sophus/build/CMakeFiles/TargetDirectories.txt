@@ -1,0 +1,14 @@
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/install/strip.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/rebuild_cache.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/install.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test_sim3.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/edit_cache.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test_so2.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/Sophus.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/list_install_components.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test_se2.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test_so3.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/install/local.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test_scso3.dir
+/home/x/Desktop/sensor fusion/third part/Sophus/build/CMakeFiles/test_se3.dir

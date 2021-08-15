@@ -1,0 +1,1 @@
+/usr/bin/c++   -Wall -Wextra -Wfloat-conversion -O3 -DNDEBUG   CMakeFiles/example-CassiniSoldner.dir/example-CassiniSoldner.cpp.o  -o example-CassiniSoldner -Wl,-rpath,"/home/x/sensor fusion/third part/GeographicLib-1.52/build/src" ../src/libGeographic.so.19.2.0 

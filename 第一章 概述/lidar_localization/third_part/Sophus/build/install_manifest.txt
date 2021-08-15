@@ -1,0 +1,7 @@
+/usr/local/include/sophus/so3.h
+/usr/local/include/sophus/se3.h
+/usr/local/include/sophus/se2.h
+/usr/local/include/sophus/sim3.h
+/usr/local/include/sophus/so2.h
+/usr/local/include/sophus/scso3.h
+/usr/local/lib/libSophus.so

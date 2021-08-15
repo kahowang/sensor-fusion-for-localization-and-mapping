@@ -1,0 +1,10 @@
+/usr/local/lib/libglog.a
+/usr/local/include/glog/logging.h
+/usr/local/include/glog/raw_logging.h
+/usr/local/include/glog/stl_logging.h
+/usr/local/include/glog/vlog_is_on.h
+/usr/local/include/glog/log_severity.h
+/usr/local/lib/cmake/glog/glog-config.cmake
+/usr/local/lib/cmake/glog/glog-config-version.cmake
+/usr/local/lib/cmake/glog/glog-targets.cmake
+/usr/local/lib/cmake/glog/glog-targets-noconfig.cmake

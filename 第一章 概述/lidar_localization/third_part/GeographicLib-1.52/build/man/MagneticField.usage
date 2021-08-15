@@ -1,0 +1,13 @@
+int usage(int retval, bool brief) {
+  if (brief)
+    ( retval ? std::cerr : std::cout ) << "Usage:\n"
+"\n"
+"For full documentation type:\n"
+"     --help\n"
+"or visit:\n"
+"    https://geographiclib.sourceforge.io/1.52/.1.html\n";
+  else
+    ( retval ? std::cerr : std::cout ) << "Man page:\n"
+;
+  return retval;
+}
