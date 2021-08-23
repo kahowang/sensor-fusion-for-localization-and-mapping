@@ -16,10 +16,10 @@ class ICPSVDRegistration: public RegistrationInterface {
   public:
     ICPSVDRegistration(const YAML::Node& node);
     ICPSVDRegistration(
-      float max_corr_dist,         //最大欧式距离差值
-      float trans_eps,                  //设置前后两次迭代的点对的欧式距离均值的最大容差
-      float euc_fitness_eps,     //设置前后两次迭代的转换矩阵的最大容差（epsilion），一旦两次迭代小于这个最大容差，则认为已经收敛到最优解，迭代停止。迭代停止条件之二，默认值为：0 
-      int max_iter      //最大迭代次数
+      float max_corr_dist, 
+      float trans_eps, 
+      float euc_fitness_eps, 
+      int max_iter
     );
 
     bool SetInputTarget(const CloudData::CLOUD_PTR& input_target) override;

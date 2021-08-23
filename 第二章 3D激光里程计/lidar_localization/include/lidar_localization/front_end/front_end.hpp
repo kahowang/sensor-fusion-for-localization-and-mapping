@@ -28,6 +28,8 @@
 
 #include "lidar_localization/models/registration/sicp/scip_registration.hpp"
 
+#include "lidar_localization/models/registration/ndt_cpu/ndt_cpu_registration.hpp"
+
 namespace lidar_localization {
 class FrontEnd {
   public:

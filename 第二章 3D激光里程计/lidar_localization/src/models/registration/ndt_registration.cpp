@@ -27,7 +27,7 @@ NDTRegistration::NDTRegistration(float res, float step_size, float trans_eps, in
 }
 
 bool NDTRegistration::SetRegistrationParam(float res, float step_size, float trans_eps, int max_iter) {
-    ndt_ptr_->setResolution(res);
+    ndt_ptr_->setResolution(res);        
     ndt_ptr_->setStepSize(step_size);
     ndt_ptr_->setTransformationEpsilon(trans_eps);
     ndt_ptr_->setMaximumIterations(max_iter);

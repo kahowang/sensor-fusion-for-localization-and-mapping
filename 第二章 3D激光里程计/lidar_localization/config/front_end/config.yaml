@@ -2,7 +2,7 @@ data_path: /home/x/catkin_ws/src/lidar_localization   # 数据存放路径
 
 # 匹配
 # TODO: implement your custom registration method and add it here
-registration_method: NDT   # 选择点云匹配方法，目前支持：ICP, ICP_SVD, NDT, SICP
+registration_method: NDT_CPU   # 选择点云匹配方法，目前支持：ICP, ICP_SVD, NDT, SICP,NDT_CPU
 
 # 局部地图
 key_frame_distance: 2.0 # 关键帧距离
@@ -37,10 +37,15 @@ ICP_SVD:
     euc_fitness_eps : 0.36
     max_iter : 10
 NDT:
-    res : 1.0
-    step_size : 0.1
-    trans_eps : 0.01
-    max_iter : 30
+    res : 1.0                 # volex  resolution
+    step_size : 0.1    # 梯度下降的步长，越大下降越快，但是容易over shoot陷入局部最优
+    trans_eps : 0.01    # 最大容差，一旦两次转换矩阵小于 trans_eps  退出迭代
+    max_iter : 30         #   最大迭代次数
+NDT_CPU:
+    res : 0.8                 # volex  resolution
+    step_size : 0.1    # 梯度下降的步长，越大下降越快，但是容易over shoot陷入局部最优
+    trans_eps : 0.01    # 最大容差，一旦两次转换矩阵小于 trans_eps  退出迭代
+    max_iter : 30         #   最大迭代次数
 SICP:
     p : 1.0
     mu : 10.0

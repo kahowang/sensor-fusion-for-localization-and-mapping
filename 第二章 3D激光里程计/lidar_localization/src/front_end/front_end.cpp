@@ -89,6 +89,9 @@ bool FrontEnd::InitRegistration(std::shared_ptr<RegistrationInterface>& registra
     else if (registration_method == "SICP") {
         registration_ptr = std::make_shared<SICPRegistration>(config_node[registration_method]);
     } 
+    else if (registration_method == "NDT_CPU") {
+        registration_ptr = std::make_shared<NDTCPURegistration>(config_node[registration_method]);
+    } 
     else if (registration_method == "YOUR_OWN_METHOD") {
         /*
             TODO: register your custom implementation here
