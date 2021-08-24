@@ -12,7 +12,7 @@
 
 ## 点云地图构建框架
 
-![框架](./pic/框架.png)
+![框架](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11%E6%A1%86%E6%9E%B6.png)
 
 FILE: front_end_flow.cpp
 
@@ -239,11 +239,19 @@ size_t ICPSVDRegistration::GetCorrespondence(
 
 公式：
 
-![svd_R](./pic/svd_R.png)
+![svd_R](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11svd_R.png)
 
-![svd_t](./pic/svd_t.png)
+![svd_t](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11svd_t.png)
 
-通过Eigen svd求解 R t
+通过Eigen svd求解 R t， 
+
+注意：求出的旋转矩阵必须满足是正交阵并且行列式为1，因此，需要对求出的旋转矩阵进行正交化.
+
+1.旋转矩阵转四元数，对四元数进行归一化。
+
+2.SO3流形投影。
+
+3.SVD分解奇异值置1。
 
 ```cpp
 void ICPSVDRegistration::GetTransform(
@@ -309,7 +317,7 @@ ICP_SVD:
 
 [NDT 公式推导及源码解析（2）](https://blog.csdn.net/u013794793/article/details/89321792)
 
-![ndt_cpu](pic/ndt_cpu.png)
+![ndt_cpu](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_cpu.png)
 
 FILE:  include/models/ndt_cpu/ndt_cpu_registration.hpp
 
@@ -423,7 +431,7 @@ NDT_CPU:
 
 ## ICP_PCL
 
-![icp_0](pic/icp_0.png)
+![icp_0](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_0.png)
 
 FILE:  icp_registration.cpp
 
@@ -455,7 +463,7 @@ bool ICPRegistration::ScanMatch(const CloudData::CLOUD_PTR& input_source,
 
 ##    NDT_PCL
 
-![ndt_pcl 0](./pic/ndt_pcl 0.png)
+![ndt_pcl 0](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl%200.png)
 
 FILE:  ndt_registration.cpp
 
@@ -558,7 +566,7 @@ roslaunch lidar_localization front_end.launch
 rosbag  play kitti_lidar_only_2011_10_03_drive_0027_synced.bag
 ```
 
-![1](./pic/1.png)
+![1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A111.png)
 
 保存地图到 slam_data 文件夹下
 
@@ -602,72 +610,72 @@ evo_ape kitti ground_truth.txt laser_odom.txt -r full --plot --plot_mode xyz
 
 ###### evo_rpe
 
-![rpe1](./pic/rpe1.png)
+![rpe1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11rpe1.png)
 
-<img src="./pic/rpe2.png" alt="rpe2" style="zoom:50%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11rpe2.png" alt="rpe2" style="zoom:50%;" />
 
-<img src="./pic/rpe3.png" alt="rpe3" style="zoom:50%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11rpe3.png" alt="rpe3" style="zoom:50%;" />
 
 ###### evo_ape
 
-![ape1](./pic/ape1.png)
+![ape1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ape1.png)
 
-<img src="./pic/ape2.png" alt="ape2" style="zoom:50%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ape2.png" alt="ape2" style="zoom:50%;" />
 
-<img src="./pic/ape3.png" alt="ape3" style="zoom:50%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ape3.png" alt="ape3" style="zoom:50%;" />
 
 ##### NDT_CPU
 
 ###### evo_rpe
 
-<img src="pic/ndt_cpu_rpe_1.png" alt="ndt_cpu_rpe_1"  />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_cpu_rpe_1.png" alt="ndt_cpu_rpe_1"  />
 
-<img src="pic/ndt_cpu_rpe_2.png" alt="ndt_cpu_rpe_2" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_cpu_rpe_2.png" alt="ndt_cpu_rpe_2" style="zoom:67%;" />
 
-<img src="pic/ndt_cpu_rpe_3.png" alt="ndt_cpu_rpe_3" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_cpu_rpe_3.png" alt="ndt_cpu_rpe_3" style="zoom:67%;" />
 
 ###### evo_ape
 
-![ndt_pcl_ape 1](pic/ndt_pcl_ape 1.png)
+![ndt_pcl_ape 1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_ape%201.png)
 
-<img src="pic/ndt_pcl_ape 2.png" alt="ndt_pcl_ape 2" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_ape%202.png" alt="ndt_pcl_ape 2" style="zoom:67%;" />
 
-<img src="pic/ndt_pcl_ape 3.png" alt="ndt_pcl_ape 3" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_ape%203.png" alt="ndt_pcl_ape 3" style="zoom:67%;" />
 
 ##### ICP_PCL
 
 ###### evo_rpe
 
-![icp_pcl rpe 1](./pic/icp_pcl rpe 1.png)
+![icp_pcl rpe 1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_pcl%20rpe%201.png)
 
-<img src="./pic/icp_pcl rpe 2.png" alt="icp_pcl rpe 2" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_pcl%20rpe%202.png" alt="icp_pcl rpe 2" style="zoom:67%;" />
 
-<img src="./pic/icp_pcl rpe 3.png" alt="icp_pcl rpe 3" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_pcl%20rpe%203.png" alt="icp_pcl rpe 3" style="zoom:67%;" />
 
 ###### evo_ape
 
-![icp_pcl ape 1](./pic/icp_pcl ape 1.png)
+![icp_pcl ape 1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_pcl%20ape%201.png)
 
-<img src="./pic/icp_pcl ape 2.png" alt="icp_pcl ape 2" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_pcl%20ape%202.png" alt="icp_pcl ape 2" style="zoom:67%;" />
 
-<img src="./pic/icp_pcl ape 3.png" alt="icp_pcl ape 3" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11icp_pcl%20ape%203.png" alt="icp_pcl ape 3" style="zoom:67%;" />
 
 ##### ICP_NDT
 
 ###### evo_rpe
 
-![ndt_pcl_rpe 1](./pic/ndt_pcl_rpe 1.png)
+![ndt_pcl_rpe 1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_rpe%201.png)
 
-<img src="./pic/ndt_pcl_rpe 2.png" alt="ndt_pcl_rpe 2" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_rpe%202.png" alt="ndt_pcl_rpe 2" style="zoom:67%;" />
 
-<img src="./pic/ndt_pcl_rpe 3.png" alt="ndt_pcl_rpe 3" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_rpe%203.png" alt="ndt_pcl_rpe 3" style="zoom:67%;" />
 
 ###### evo_ape
 
-![ndt_pcl_ape 1](./pic/ndt_pcl_ape 1.png)
+![ndt_pcl_ape 1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_ape%201.png)
 
-<img src="./pic/ndt_pcl_ape 2.png" alt="ndt_pcl_ape 2" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_ape%202.png" alt="ndt_pcl_ape 2" style="zoom:67%;" />
 
-<img src="./pic/ndt_pcl_ape 3.png" alt="ndt_pcl_ape 3" style="zoom:67%;" />
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11ndt_pcl_ape%203.png" alt="ndt_pcl_ape 3" style="zoom:67%;" />
 
 ​																									          edited by kaho  2021.8.17
