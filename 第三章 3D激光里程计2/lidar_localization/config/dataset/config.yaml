@@ -1,0 +1,18 @@
+#
+# ROS bag dataset config
+# 
+measurements:
+    lidar:
+        topic_name: /kitti/velo/pointcloud
+        frame_id: velo_link
+        queue_size: 100000
+    imu:
+        topic_name: /kitti/oxts/imu
+        frame_id: imu_link
+        queue_size: 1000000
+    gnss:
+        topic_name: /kitti/oxts/gps/fix
+        frame_id: imu_link
+        queue_size: 1000000
+
+    

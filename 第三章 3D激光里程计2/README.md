@@ -1,0 +1,601 @@
+# 多传感器融合定位 三章 3D激光里程计2
+
+参考博客：
+
+[slam中ceres的常见用法总结](https://blog.csdn.net/qq_42700518/article/details/105898222)
+
+参考代码：
+
+[基于线面特征的激光里程计](https://zhuanlan.zhihu.com/p/348195351)
+
+代码下载： [https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%89%E7%AB%A0%203D%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%89%E7%AB%A0%203D%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12)
+
+## 环境配置问题：
+
+### Sophus 编译
+
+#### 问题1：系统找不到Sophus 库
+
+![sophus2](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12sophus2.png)
+
+
+
+#### 问题2：缺少 #include  <sophus/so3.hpp>
+
+![](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12sophus3.png)
+
+#### 解决办法：
+
+均是因为sophus库安装不对导致的，可以选择安装更加通用广泛的版本，[高博slam14讲中的sophus版本](https://github.com/gaoxiang12/slambook2/tree/master/3rdparty)
+
+```bash
+#下载高博slam14讲的sophus版本后
+cd  Sophus
+mkdir  build
+cd  build
+make -j8
+sudo make install
+```
+
+#### 问题3：缺少 libglog.so
+
+参考博客：
+
+[make[2]: *** 没有规则可以创建“shared/libaplcommon-pdr.so”需要的目标“/usr/lib/x86_64-linux-gnu/libcrypto.so”。 停止。](https://blog.csdn.net/asia66/article/details/85284307)
+
+![](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12without%20libglog.so.png)
+
+#### 解决办法：
+
+```bash
+sudo apt-get  install libgoogle-glog-dev
+```
+
+## 基于线面特征的位姿优化
+
+#### 公式推导
+
+注意这里的推导形式是分别更新R ，t  ，与  直接更新转换矩阵T的导数会有所不同
+
+参考博客：[基于线面特征的激光里程计](https://zhuanlan.zhihu.com/p/348195351)
+
+##### 点到线雅克比推导：
+
+点到线的距离  :
+
+$$
+d_{\varepsilon}=\frac{\left|\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)\right|}{\left|p_{a}-p_{b}\right|}
+$$
+线特征残差雅可比：
+$$
+J_{\varepsilon}=\frac{\alpha d_{\varepsilon}}{\alpha T}=\frac{\alpha d_{\varepsilon}}{\alpha p_{i}^{\prime}} \frac{\alpha p_{i}^{\prime}}{\alpha T}
+$$
+对平移的雅可比：
+$$
+\frac{\alpha p_{i}^{\prime}}{\alpha t}=I
+$$
+对旋转的雅可比：
+$$
+\frac{\alpha p_{i}^{\prime}}{\alpha R}=-\left(R p_{i}\right)_{\times}
+$$
+求等号右边第一项的偏导数, 令
+$$
+X=\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)
+$$
+推导得：
+$$
+\begin{gathered}
+\frac{\alpha d_{\varepsilon}}{\alpha p_{i}}=\frac{\alpha d_{\varepsilon}}{\alpha|X|} \frac{\alpha|X|}{\alpha X} \frac{\alpha X}{\alpha p_{i}} \\
+=\frac{1}{\left|p_{a}-p_{b}\right|} \frac{\alpha|X|}{\alpha X} \frac{\alpha X}{\alpha p_{i}^{\prime}}=\frac{1}{\left|p_{a}-p_{b}\right|} \frac{X}{|X|} \frac{\alpha X}{\alpha p_{i}^{\prime}} \\
+=\frac{1}{\mid p_{a}-p_{b}} \mid \frac{\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)}{\left|\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)\right|}\left(-\left(p_{i}^{\prime}-p_{a}\right)_{\times}+\left(p_{i}^{\prime}+p_{b}\right)_{\times}\right) \\
+=\frac{\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)}{\left|\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)\right|} \frac{\left(p_{a}-p_{b}\right)_{\times}}{\left|p_{a}-p_{b}\right|}
+\end{gathered}
+$$
+其中,
+$$
+\quad \frac{\alpha|X|}{\alpha X}=\frac{\alpha\left(s \operatorname{qrt}\left(X^{T} X\right)\right)}{\alpha\left(X^{T} X\right)} \frac{\alpha\left(X^{T} X\right)}{\alpha(X)}=\frac{X}{|X|}
+$$
+
+##### 面到线雅可比推导：
+
+点到面的距离：
+$$
+d_{H}=\left(p_{i}^{\prime}-p_{j}\right) \cdot \frac{\left(p_{l}-p_{j}\right) \times\left(p_{m}-p_{j}\right)}{\left|\left(p_{l}-p_{j}\right) \times\left(p_{m}-p_{j}\right)\right|}
+$$
+面特征残差雅可比：
+$$
+J_{H}=\frac{\alpha d_{H}}{\alpha T}=\frac{\alpha d_{H}}{\alpha p_{i}^{\prime}} \frac{\alpha p_{i}^{\prime}}{\alpha T}
+$$
+对平移和旋转的雅可比同上
+
+对平移的雅可比：
+$$
+\frac{\alpha p_{i}^{\prime}}{\alpha t}=I
+$$
+对旋转的雅可比：
+$$
+\frac{\alpha p_{i}^{\prime}}{\alpha R}=-\left(R p_{i}\right)_{\times}
+$$
+求等号右边第一项的偏导数为：
+$$
+\frac{\alpha d_{H}}{\alpha p_{i}^{\prime}}=\frac{\left(p_{l}-p_{j}\right) \times\left(p_{m}-p_{j}\right)}{\left|\left(p_{l}-p_{j}\right) \times\left(p_{m}-p_{j}\right)\right|}
+$$
+
+## Ceres 入门笔记
+
+初级入门可参考高翔slam14讲，ceres 曲线拟合。
+
+解析求导需要对雅克比进行赋值，因为ceres默认的更新形式是加减方式，而so3的四元数更新方式不同，所以需要自定义旋转参数块（顾名思义：自定义delta_q更新运算法则）
+
+### 自定义旋转参数块：LocalParameterization参数化
+
+参考博客： 
+
+[Ceres详解（一） Problem类](https://blog.csdn.net/weixin_43991178/article/details/100532618)
+
+[Ceres（二）LocalParameterization参数化](https://blog.csdn.net/hzwwpgmwy/article/details/86490556)
+
+[优化库——ceres（二）深入探索ceres::Problem](https://blog.csdn.net/jdy_lyy/article/details/119360492)
+
+​	对于四元数或者旋转矩阵这种使用过参数化表示旋转的方式，它们是不支持广义的加法（因为使用普通的加法就会打破其 constraint，比如旋转矩阵加旋转矩阵得到的就不再是旋转矩阵），所以我们在使用ceres对其进行迭代更新的时候就需要自定义其更新方式了，具体的做法是实现一个参数本地化的子类，需要继承于LocalParameterization，LocalParameterization是纯虚类，所以我们继承的时候要把所有的纯虚函数都实现一遍才能使用该类生成对象。
+
+​	除了不支持广义加法要自定义参数本地化的子类外，如果你要对优化变量做一些限制也可以如法炮制，比如ceres中slam2d example中对角度范围进行了限制.
+
+#### LocalParameterization   自定义实现
+
+​	这里以四元数为例子，解释如何实现参数本地化，需要注意的是，QuaternionParameterization中表示四元数中四个量在内存中的存储顺序是[w, x, y, z]，而Eigen内部四元数在内存中的存储顺序是[x, y, z, w]，但是其构造顺序是[w, x, y, z]（不要被这个假象给迷惑），所以就要使用另一种参数本地化类，即EigenQuaternionParameterization，下面就以QuaternionParameterization为例子说明，如下：
+
+```cpp
+class CERES_EXPORT QuaternionParameterization : public LocalParameterization {
+ public:
+  virtual ~QuaternionParameterization() {}
+  virtual bool Plus(const double* x,
+                    const double* delta,
+                    double* x_plus_delta) const;
+  virtual bool ComputeJacobian(const double* x,
+                               double* jacobian) const;
+  virtual int GlobalSize() const { return 4; }
+  virtual int LocalSize() const { return 3; }
+};
+```
+
+##### 1.GlobalSize()
+
+​	表示参数 x x*x* 的自由度（可能有冗余），比如四元数的自由度是4，旋转矩阵so3的自由度是3
+
+#### 2.LocalSize()
+
+​	表示 Δx 所在的正切空间（tangent space）的自由度，那么这个自由度是多少呢？下面进行解释，
+正切空间是流形（manifold）中概念，对流形感兴趣的可以参考[2]，参考论文[3]，我们可以这么理解manifold：
+
+```bash
+A manifold is a mathematical space that is not necessarily Euclidean on a global scale, but can be seen as Euclidean on a local scale
+```
+
+​	上面的意思是说，SO3 空间是属于非欧式空间的，但是没关系，我们只要保证旋转的局部是欧式空间，就可以使用流形进行优化了. 比如用四元数表示的3D旋转是属于非欧式空间的，那么我们取四元数的向量部分作为优化过程中的微小增量（因为是小量，所以不存在奇异性）. 为什么使用四元数的向量部分？这部分可以参考[4]或者之前写的关于四元数的博客. 这样一来，向量部分就位于欧式空间了，也就得到了正切空间自由度是3.
+
+#### 3.Plus()
+
+​	自定义优化变量更新函数
+
+#### 4.ComputeJacobian()
+
+个人理解，是 定义待更新变量 和  待更新变量的delta 的雅克比
+
+![ComputeJacobian](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ComputeJacobian.png)
+
+#### 5.Problem::AddParameterBlock()
+
+自定义参数块后，需要通过   Problem::AddParameterBlock   自定义参数快加载
+
+```cpp
+void Problem::AddParameterBlock(double *values, int size, LocalParameterization *local_parameterization)
+```
+
+### CostFunction  定义
+
+重点参考博客：
+
+[Ceres详解（一） Problem类](https://blog.csdn.net/weixin_43991178/article/details/100532618)
+
+[Ceres详解（二） CostFunction](https://blog.csdn.net/weixin_43991178/article/details/100534230)
+
+## 基于线面特征解析求导的实现
+
+原工程移植了 aloam的自动求导，这里实现解析求导，公式推导如上“基于线面特征位姿优化/公式推导”所示
+
+FILE:   lidar_localization/include/lidar_localization/models/loam/aloam_analytic_factor.hpp
+
+#### 定义CostFunction
+
+##### 解析求导-点线匹配 CostFunction
+
+```cpp
+class  EdgeAnalyticCostFunction   :  public   ceres::SizedCostFunction<3, 4,  3> {             // 优化参数维度：3     输入维度 ： q : 4   t : 3
+public:
+        double s;
+        Eigen::Vector3d curr_point, last_point_a, last_point_b;
+        EdgeAnalyticCostFunction(const Eigen::Vector3d curr_point_, const Eigen::Vector3d last_point_a_,
+									   const Eigen::Vector3d last_point_b_, const double s_  )
+                :  curr_point(curr_point_),   last_point_a(last_point_a_),   last_point_b(last_point_b_) ,  s(s_) {}
+
+virtual  bool  Evaluate(double  const  *const  *parameters,  
+                                                double  *residuals,  
+                                                double  **jacobians) const                               //   定义残差模型
+{     
+        Eigen::Map<const  Eigen::Quaterniond>   q_last_curr(parameters[0]);               //   存放 w  x y z 
+        Eigen::Map<const  Eigen::Vector3d>      t_last_curr(parameters[1]);
+        Eigen::Vector3d  lp ;                           //   line point
+        Eigen::Vector3d  lp_r ;
+        lp_r =  q_last_curr*curr_point;
+        lp     =   q_last_curr  * curr_point  + t_last_curr;   //   new point
+        Eigen::Vector3d  nu =  (lp - last_point_a).cross(lp - last_point_b);
+        Eigen::Vector3d  de = last_point_a  - last_point_b;
+
+        residuals[0]  =  nu.norm()  /  de.norm();                              //  线残差
+
+        //  归一单位化
+        nu.normalize();
+
+        if (jacobians !=  NULL)
+        {
+                if (jacobians[0]  !=  NULL)
+                {
+                        Eigen::Vector3d  re = last_point_b  -   last_point_a;
+                        Eigen::Matrix3d  skew_re  =   skew(re);
+
+                        //  J_so3_Rotation
+                        Eigen::Matrix3d   skew_lp_r  =  skew(lp_r);
+                        Eigen::Matrix3d    dp_by_dr;
+                        dp_by_dr.block<3,3>(0,0)  =  -skew_lp_r;
+                        Eigen::Map<Eigen::Matrix<double, 1, 4, Eigen::RowMajor>> J_so3_r(jacobians[0]);
+                        J_so3_r.setZero();
+                        J_so3_r.block<1,3>(0,0)  =  nu.transpose()  *  dp_by_dr /  de.norm();
+
+                        //  J_so3_Translation
+                        Eigen::Matrix3d  dp_by_dt;
+                        (dp_by_dt.block<3,3>(0,0)).setIdentity();
+                        Eigen::Map<Eigen::Matrix<double,  1,  3,  Eigen::RowMajor>> J_so3_t(jacobians[1]);
+                        J_so3_t.setZero();
+                        J_so3_t.block<1,3>(0,0)  =   nu.transpose()  *  dp_by_dt /  de.norm();
+                }
+        }
+        return  true;
+}     
+};
+```
+
+##### 解析求导-点面匹配 CostFunction
+
+```cpp
+class PlaneAnalyticCostFunction  :   public  ceres::SizedCostFunction<1, 4, 3>{
+public:
+	Eigen::Vector3d curr_point, last_point_j, last_point_l, last_point_m;
+	Eigen::Vector3d ljm_norm;
+	double s;
+
+        PlaneAnalyticCostFunction(Eigen::Vector3d curr_point_, Eigen::Vector3d last_point_j_,
+					 Eigen::Vector3d last_point_l_, Eigen::Vector3d last_point_m_, double s_)
+		: curr_point(curr_point_), last_point_j(last_point_j_), last_point_l(last_point_l_),last_point_m(last_point_m_), s(s_){}
+
+        virtual  bool  Evaluate(double  const  *const  *parameters, 
+                                                         double  *residuals, 
+                                                          double  **jacobians)const {      //   定义残差模型
+                // 叉乘运算， j,l,m 三个但构成的平行四边面积(摸)和该面的单位法向量(方向)
+                Eigen::Vector3d  ljm_norm = (last_point_j - last_point_l).cross(last_point_j - last_point_m);
+		ljm_norm.normalize();    //  单位法向量
+
+                Eigen::Map<const Eigen::Quaterniond>  q_last_curr(parameters[0]);
+                Eigen::Map<const Eigen::Vector3d> t_last_curr(parameters[1]);
+
+                Eigen::Vector3d  lp;      // “从当前阵的当前点” 经过转换矩阵转换到“上一阵的同线束激光点”
+                Eigen::Vector3d  lp_r = q_last_curr *  curr_point ;                        //  for compute jacobian o rotation  L: dp_dr
+                lp = q_last_curr *  curr_point  +  t_last_curr;  
+
+                // 残差函数
+                double  phi1 =  (lp - last_point_j ).dot(ljm_norm);
+                residuals[0]  =   std::fabs(phi1);
+
+                if(jacobians != NULL)
+                {
+                        if(jacobians[0] != NULL)
+                        {
+                                phi1 = phi1  /  residuals[0];
+                                //  Rotation
+                                Eigen::Matrix3d  skew_lp_r  = skew(lp_r);
+                                Eigen::Matrix3d  dp_dr;
+                                dp_dr.block<3,3>(0,0) =  -skew_lp_r;
+                                Eigen::Map<Eigen::Matrix<double, 1, 4, Eigen::RowMajor>>  J_so3_r(jacobians[0]);
+                                J_so3_r.setZero();
+                                J_so3_r.block<1,3>(0,0) =  phi1 *  ljm_norm.transpose() *  (dp_dr);
+
+                                Eigen::Map<Eigen::Matrix<double, 1, 3, Eigen::RowMajor>>  J_so3_t(jacobians[1]);
+                                J_so3_t.block<1,3>(0,0)  = phi1 * ljm_norm.transpose();                                                                                                                                                                                                                                            
+                        }
+                }
+                return  true;
+        }
+};
+```
+
+##### Eigen 反对称矩阵函数定义
+
+```cpp
+Eigen::Matrix<double,3,3> skew(Eigen::Matrix<double,3,1>& mat_in){                 //  反对称矩阵定义
+    Eigen::Matrix<double,3,3> skew_mat;
+    skew_mat.setZero();
+    skew_mat(0,1) = -mat_in(2);
+    skew_mat(0,2) =  mat_in(1);
+    skew_mat(1,2) = -mat_in(0);
+    skew_mat(1,0) =  mat_in(2);
+    skew_mat(2,0) = -mat_in(1);
+    skew_mat(2,1) =  mat_in(0);
+    return skew_mat;
+}
+```
+
+#### 定义旋转参数块
+
+###### 使用ceres自带的四元数更新参数块 
+
+通过观察自动求导的源码，可以发现，在自定求导中，使用了ceres的一个自定义四元数参数块
+
+FILE:  lidar_localization/src/models/loam/aloam_registration.cpp
+
+使用EigenQuaternionParameterization  参数块
+
+```cpp
+ config_.q_parameterization_ptr = new ceres::EigenQuaternionParameterization();    
+```
+
+加载参数块
+
+```cpp
+problem_.AddParameterBlock(param_.q, 4, config_.q_parameterization_ptr);            //  加载自定义旋转参数块
+```
+
+###### 自己定义四元数更新参数块
+
+FILE:   lidar_localization/include/lidar_localization/models/loam/aloam_analytic_factor.hpp
+
+参考博客 ：
+
+[优化库——ceres（二）深入探索ceres::Problem](https://blog.csdn.net/jdy_lyy/article/details/119360492)
+
+[[ceres-solver] From QuaternionParameterization to LocalParameterization](https://www.cnblogs.com/JingeTU/p/11707557.html)
+
+这里需要注意的是自定义时，输入的 q :四元数 4维 ， 更新以 so3的形式更新 3 维 ， 所以GlobalSize：4  LocalSize：3  具体体现在  ComputeJacobian()  函数中
+
+```cpp
+//  自定义旋转残差块
+//参考博客   https://blog.csdn.net/jdy_lyy/article/details/119360492
+class PoseSO3Parameterization  :   public  ceres::LocalParameterization {                               //  自定义so3  旋转块
+ public:       
+        PoseSO3Parameterization()  { }
+
+        virtual ~PoseSO3Parameterization() { }
+  
+        virtual bool Plus(const double* x,
+                        const double* delta,
+                        double* x_plus_delta) const          //参数正切空间上的更新函数
+                { 
+                        Eigen::Map<const  Eigen::Quaterniond>   quater(x);       //   待更新的四元数
+                        Eigen::Map<const  Eigen::Vector3d>     delta_so3(delta);     //    delta 值,使用流形 so3 更新
+
+                        Eigen::Quaterniond  delta_quater  =   Sophus::SO3d::exp(delta_so3).unit_quaternion();     //   so3 转换位 delta_p  四元数
+                        
+                        Eigen::Map<Eigen::Quaterniond>  quter_plus(x_plus_delta);    //   更新后的四元数
+
+                        // 旋转更新公式
+                        quter_plus =  (delta_quater*quater).normalized();        
+
+                        return  true;
+                }
+
+        virtual bool ComputeJacobian(const double* x, double* jacobian) const  //  四元数对so3的偏导数
+        {
+                Eigen::Map<Eigen::Matrix<double, 4, 3, Eigen::RowMajor>> j(jacobian);
+                (j.topRows(3)).setIdentity();
+                (j.bottomRows(1)).setZero();
+
+                return true;
+        }
+
+        // virtual bool MultiplyByJacobian(const double* x,
+        //                                 const int num_rows,
+        //                                 const double* global_matrix,
+        //                                 double* local_matrix) const;//一般不用
+
+        virtual int GlobalSize() const  {return  4;} // 参数的实际维数
+        virtual int LocalSize() const   {return  3;} // 正切空间上的参数维数
+};
+```
+
+## 调用
+
+FILE: lidar_localization/src/models/loam/aloam_registration.cpp
+
+### 解析求导
+
+为了方便调用，沿用自动求导的调用方式
+
+定义宏
+
+```cpp
+#define  autograde                  //  使用自动求导  or  解析求导
+```
+
+点线匹配
+
+```cpp
+bool CeresALOAMRegistration::AddEdgeFactor(
+    const Eigen::Vector3d &source,
+    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y,
+    const double &ratio
+) {
+
+    /*自动求导*/
+  #ifdef  autograde
+    ceres::CostFunction *factor_edge = LidarEdgeFactor::Create(                  //   创建误差项
+        source, 
+        target_x, target_y, 
+        ratio
+    );
+
+    problem_.AddResidualBlock(
+        factor_edge,                                    //   约束边   cost_function
+        config_.loss_function_ptr,        //   鲁棒核函数  lost_function
+        param_.q, param_.t                      //  关联参数
+    );
+
+    #else
+   /*解析求导*/
+   ceres::CostFunction *factor_analytic_edge =   new EdgeAnalyticCostFunction(
+        source, 
+        target_x, target_y, 
+        ratio
+   );
+
+    problem_.AddResidualBlock(
+        factor_analytic_edge,                                    //   约束边   cost_function
+        config_.loss_function_ptr,        //   鲁棒核函数  lost_function
+        param_.q, param_.t                      //  关联参数
+    );
+
+#endif
+    return true;
+}
+```
+
+点面匹配
+
+```cpp
+bool CeresALOAMRegistration::AddPlaneFactor(
+    const Eigen::Vector3d &source,
+    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y, const Eigen::Vector3d &target_z,
+    const double &ratio
+) {
+
+    /*自动求导*/
+    #ifdef  autograde
+    ceres::CostFunction *factor_plane = LidarPlaneFactor::Create(
+        source, 
+        target_x, target_y, target_z, 
+        ratio
+    );
+
+    problem_.AddResidualBlock(
+        factor_plane,
+        config_.loss_function_ptr, 
+        param_.q, param_.t
+    );
+
+#else
+   /*解析求导*/
+    ceres::CostFunction *factor_analytic_plane =new PlaneAnalyticCostFunction(
+        source, 
+        target_x, target_y, target_z, 
+        ratio
+    );
+
+    problem_.AddResidualBlock(
+        factor_analytic_plane,
+        config_.loss_function_ptr, 
+        param_.q, param_.t
+    );
+
+#endif
+
+    return true;
+}
+```
+
+
+
+### 自定义旋转参数块
+
+定义宏
+
+```cpp
+#define  maunual_block_loder                    //  使用ceres 自带EigenQuaternionParameterization  参数块   or  自定义 PoseSO3Parameterization 旋转参数块
+```
+
+```cpp
+#ifdef  maunual_block_loder
+	config_.q_parameterization_ptr =  new  PoseSO3Parameterization() ;                    //  自定义旋转参数块
+#else 
+	config_.q_parameterization_ptr = new ceres::EigenQuaternionParameterization();          //   SE3 转换矩阵/位姿参数化，
+#endif
+```
+
+## evo 评价
+
+### 自动求导
+
+![autograde_ceres_kitti](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_kitti.png)
+
+![autograde_ceres_kitti2](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_kitti2.png)
+
+#### evo_rpe
+
+![autograde_ceres_evo_rpe_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_rpe_1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_rpe_2.png" alt="autograde_ceres_evo_rpe_2" style="zoom:67%;" />
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_rpe_3.png" alt="autograde_ceres_evo_rpe_3" style="zoom:67%;" />
+
+#### evo_ape
+
+![autograde_ceres_evo_ape_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_ape_1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_ape_2.png" alt="autograde_ceres_evo_ape_2" style="zoom:67%;" />
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_ape_3.png" alt="autograde_ceres_evo_ape_3" style="zoom:67%;" />
+
+### 解析求导
+
+![analystics_ceres_kitti](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_kitti.png)
+
+![analystics_ceres_kitti2](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_kitti2.png)
+
+![analystics_ceres_kitti3](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_kitti3.png)
+
+#### evo_rpe
+
+![analystics_ceres_evo_rpe_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_rpe_1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_rpe_2.png" alt="analystics_ceres_evo_rpe_2" style="zoom:67%;" />
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_rpe_3.png" alt="analystics_ceres_evo_rpe_3" style="zoom:67%;" />
+
+#### evo_ape
+
+![analystics_ceres_evo_ape_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_ape_1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_ape_2.png" alt="analystics_ceres_evo_ape_2" style="zoom:67%;" />
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_ape_3.png" alt="analystics_ceres_evo_ape_3" style="zoom:67%;" />
+
+### 解析求导+自定义参数块
+
+![kitti1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12kitti1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12kitti2.png" alt="kitti2" style="zoom: 67%;" />
+
+#### evo_rpe
+
+![rpe1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12rpe1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12rpe2.png" alt="rpe2" style="zoom:67%;" />
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12rpe3.png" alt="rpe3" style="zoom:67%;" />
+
+#### evo_ape
+
+![ape1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape1.png)
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape2.png" alt="ape2" style="zoom:67%;" />
+
+<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape3.png" alt="ape3" style="zoom:67%;" />
+
+​																																													edit   by   kaho  2021.8.31

@@ -1,0 +1,7 @@
+find_package (Sophus REQUIRED)
+#set(Sophus_INCLUDE_DIRS "/usr/local/include/sophus")
+#set(Sophus_LIBS "/usr/local/lib/libSophus.so")
+#set(Sophus_INCLUDE_DIRS "/home/x/Downloads/Sophus/sophus")
+#set(Sophus_LIBS "/home/x/sensor_fusion/third_part/Sophus/sophus/libSophus.so")
+#include_directories(${Sophus_INCLUDE_DIRS})
+list(APPEND ALL_TARGET_LIBRARIES ${Sophus_LIBRARIES})

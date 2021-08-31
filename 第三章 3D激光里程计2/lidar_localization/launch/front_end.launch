@@ -1,0 +1,30 @@
+<launch>
+    <!-- KITTI odometry dataset uses HDL-64E -->
+    <param name="scan_line" type="int" value="64" />
+
+    <!-- if 1, do mapping 10 Hz, if 2, do mapping 5 Hz. Suggest to use 1, it will adjust frequence automaticlly -->
+    <param name="mapping_skip_frame" type="int" value="1" />
+
+    <!-- remove too closed points -->
+    <param name="minimum_range" type="double" value="5"/>
+
+    <param name="mapping_line_resolution" type="double" value="0.4"/>
+    <param name="mapping_plane_resolution" type="double" value="0.8"/>
+
+    <node pkg="lidar_localization" type="scan_registration_node" name="scan_registration_node" output="screen"/>
+
+    <!-- 
+    <node pkg="lidar_localization" type="front_end_node" name="front_end_node" output="screen" />
+    -->
+    
+    <node pkg="lidar_localization" type="aloam_laser_odometry_node" name="aloam_laser_odometry_node" output="screen" />
+
+    <node pkg="lidar_localization" type="aloam_mapping_node" name="aloam_mapping_node" output="screen" />
+
+    <node pkg="lidar_localization" type="evaluation_node" name="evaluation_node" output="screen" />
+
+    <arg name="rviz" default="true" />
+    <group if="$(arg rviz)">
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find lidar_localization)/rviz/front_end.rviz" />
+    </group>
+</launch>
