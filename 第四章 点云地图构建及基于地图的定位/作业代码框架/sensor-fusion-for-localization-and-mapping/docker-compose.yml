@@ -1,0 +1,26 @@
+version: '3.4'
+services:
+  # cpu development:
+  workspace-bionic-cpu-vnc:
+    build:
+      context: docker
+      dockerfile: cpu.Dockerfile
+      network: host
+    image: registry.cn-shanghai.aliyuncs.com/shenlanxueyuan/sensor-fusion-workspace:bionic-cpu-vnc
+    container_name: sensor-fusion-workspace-cpu
+    privileged: true
+    environment:
+        # set VNC login password here:
+        - VNC_PASSWORD=sensorfusion
+    volumes:
+      # mount your workspace here:
+      - $PWD/workspace:/workspace
+    ports:
+      # HTML5 VNC:
+      - 40080:80
+      # standard VNC client:
+      - 45901:5901
+      # supervisord admin:
+      - 49001:9001
+      # ROS master:
+      - 11311:11311

@@ -1,0 +1,17 @@
+<!doctype html>
+
+<head>
+    <script type="text/javascript">
+        // parse port:
+        var port = window.location.port;
+        if (!port)
+            port = window.location.protocol[4] == 's' ? 443 : 80;
+        
+        // launch noVNC portal
+        window.location.href = "vnc.html?autoconnect=1&autoscale=1&quality=3";
+    </script>
+    <title>Page Redirection</title>
+</head>
+
+<body>
+</body>

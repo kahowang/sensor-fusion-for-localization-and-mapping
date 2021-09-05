@@ -1,0 +1,4 @@
+<launch>
+<node pkg="rviz"  type="rviz"  name="rviz"  args="-d $(find lidar_localization)/rviz/hello_kitti.rviz"></node>
+<node pkg="lidar_localization"  type="hello_kitti_node"  name="hello_kitti_node"  output="screen"></node>
+</launch>
