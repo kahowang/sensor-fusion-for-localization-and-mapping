@@ -369,48 +369,7 @@ FILE:   lidar_localization/include/lidar_localization/models/loam/aloam_analytic
 这里需要注意的是自定义时，输入的 q :四元数 4维 ， 更新以 so3的形式更新 3 维 ， 所以GlobalSize：4  LocalSize：3  具体体现在  ComputeJacobian()  函数中
 
 ```cpp
-//  自定义旋转残差块
-//参考博客   https://blog.csdn.net/jdy_lyy/article/details/119360492
-class PoseSO3Parameterization  :   public  ceres::LocalParameterization {                               //  自定义so3  旋转块
- public:       
-        PoseSO3Parameterization()  { }
-
-        virtual ~PoseSO3Parameterization() { }
-  
-        virtual bool Plus(const double* x,
-                        const double* delta,
-                        double* x_plus_delta) const          //参数正切空间上的更新函数
-                { 
-                        Eigen::Map<const  Eigen::Quaterniond>   quater(x);       //   待更新的四元数
-                        Eigen::Map<const  Eigen::Vector3d>     delta_so3(delta);     //    delta 值,使用流形 so3 更新
-
-                        Eigen::Quaterniond  delta_quater  =   Sophus::SO3d::exp(delta_so3).unit_quaternion();     //   so3 转换位 delta_p  四元数
-                        
-                        Eigen::Map<Eigen::Quaterniond>  quter_plus(x_plus_delta);    //   更新后的四元数
-
-                        // 旋转更新公式
-                        quter_plus =  (delta_quater*quater).normalized();        
-
-                        return  true;
-                }
-
-        virtual bool ComputeJacobian(const double* x, double* jacobian) const  //  四元数对so3的偏导数
-        {
-                Eigen::Map<Eigen::Matrix<double, 4, 3, Eigen::RowMajor>> j(jacobian);
-                (j.topRows(3)).setIdentity();
-                (j.bottomRows(1)).setZero();
-
-                return true;
-        }
-
-        // virtual bool MultiplyByJacobian(const double* x,
-        //                                 const int num_rows,
-        //                                 const double* global_matrix,
-        //                                 double* local_matrix) const;//一般不用
-
-        virtual int GlobalSize() const  {return  4;} // 参数的实际维数
-        virtual int LocalSize() const   {return  3;} // 正切空间上的参数维数
-};
+//  自定义旋转残差块//参考博客   https://blog.csdn.net/jdy_lyy/article/details/119360492class PoseSO3Parameterization  :   public  ceres::LocalParameterization {                               //  自定义so3  旋转块 public:               PoseSO3Parameterization()  { }        virtual ~PoseSO3Parameterization() { }          virtual bool Plus(const double* x,                        const double* delta,                        double* x_plus_delta) const          //参数正切空间上的更新函数                {                         Eigen::Map<const  Eigen::Quaterniond>   quater(x);       //   待更新的四元数                        Eigen::Map<const  Eigen::Vector3d>     delta_so3(delta);     //    delta 值,使用流形 so3 更新                        Eigen::Quaterniond  delta_quater  =   Sophus::SO3d::exp(delta_so3).unit_quaternion();     //   so3 转换位 delta_p  四元数                                                Eigen::Map<Eigen::Quaterniond>  quter_plus(x_plus_delta);    //   更新后的四元数                        // 旋转更新公式                        quter_plus =  (delta_quater*quater).normalized();                                return  true;                }        virtual bool ComputeJacobian(const double* x, double* jacobian) const  //  四元数对so3的偏导数        {                Eigen::Map<Eigen::Matrix<double, 4, 3, Eigen::RowMajor>> j(jacobian);                (j.topRows(3)).setIdentity();                (j.bottomRows(1)).setZero();                return true;        }        // virtual bool MultiplyByJacobian(const double* x,        //                                 const int num_rows,        //                                 const double* global_matrix,        //                                 double* local_matrix) const;//一般不用        virtual int GlobalSize() const  {return  4;} // 参数的实际维数        virtual int LocalSize() const   {return  3;} // 正切空间上的参数维数};
 ```
 
 ## 调用
@@ -430,86 +389,13 @@ FILE: lidar_localization/src/models/loam/aloam_registration.cpp
 点线匹配
 
 ```cpp
-bool CeresALOAMRegistration::AddEdgeFactor(
-    const Eigen::Vector3d &source,
-    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y,
-    const double &ratio
-) {
-
-    /*自动求导*/
-  #ifdef  autograde
-    ceres::CostFunction *factor_edge = LidarEdgeFactor::Create(                  //   创建误差项
-        source, 
-        target_x, target_y, 
-        ratio
-    );
-
-    problem_.AddResidualBlock(
-        factor_edge,                                    //   约束边   cost_function
-        config_.loss_function_ptr,        //   鲁棒核函数  lost_function
-        param_.q, param_.t                      //  关联参数
-    );
-
-    #else
-   /*解析求导*/
-   ceres::CostFunction *factor_analytic_edge =   new EdgeAnalyticCostFunction(
-        source, 
-        target_x, target_y, 
-        ratio
-   );
-
-    problem_.AddResidualBlock(
-        factor_analytic_edge,                                    //   约束边   cost_function
-        config_.loss_function_ptr,        //   鲁棒核函数  lost_function
-        param_.q, param_.t                      //  关联参数
-    );
-
-#endif
-    return true;
-}
+bool CeresALOAMRegistration::AddEdgeFactor(    const Eigen::Vector3d &source,    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y,    const double &ratio) {    /*自动求导*/  #ifdef  autograde    ceres::CostFunction *factor_edge = LidarEdgeFactor::Create(                  //   创建误差项        source,         target_x, target_y,         ratio    );    problem_.AddResidualBlock(        factor_edge,                                    //   约束边   cost_function        config_.loss_function_ptr,        //   鲁棒核函数  lost_function        param_.q, param_.t                      //  关联参数    );    #else   /*解析求导*/   ceres::CostFunction *factor_analytic_edge =   new EdgeAnalyticCostFunction(        source,         target_x, target_y,         ratio   );    problem_.AddResidualBlock(        factor_analytic_edge,                                    //   约束边   cost_function        config_.loss_function_ptr,        //   鲁棒核函数  lost_function        param_.q, param_.t                      //  关联参数    );#endif    return true;}
 ```
 
 点面匹配
 
 ```cpp
-bool CeresALOAMRegistration::AddPlaneFactor(
-    const Eigen::Vector3d &source,
-    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y, const Eigen::Vector3d &target_z,
-    const double &ratio
-) {
-
-    /*自动求导*/
-    #ifdef  autograde
-    ceres::CostFunction *factor_plane = LidarPlaneFactor::Create(
-        source, 
-        target_x, target_y, target_z, 
-        ratio
-    );
-
-    problem_.AddResidualBlock(
-        factor_plane,
-        config_.loss_function_ptr, 
-        param_.q, param_.t
-    );
-
-#else
-   /*解析求导*/
-    ceres::CostFunction *factor_analytic_plane =new PlaneAnalyticCostFunction(
-        source, 
-        target_x, target_y, target_z, 
-        ratio
-    );
-
-    problem_.AddResidualBlock(
-        factor_analytic_plane,
-        config_.loss_function_ptr, 
-        param_.q, param_.t
-    );
-
-#endif
-
-    return true;
-}
+bool CeresALOAMRegistration::AddPlaneFactor(    const Eigen::Vector3d &source,    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y, const Eigen::Vector3d &target_z,    const double &ratio) {    /*自动求导*/    #ifdef  autograde    ceres::CostFunction *factor_plane = LidarPlaneFactor::Create(        source,         target_x, target_y, target_z,         ratio    );    problem_.AddResidualBlock(        factor_plane,        config_.loss_function_ptr,         param_.q, param_.t    );#else   /*解析求导*/    ceres::CostFunction *factor_analytic_plane =new PlaneAnalyticCostFunction(        source,         target_x, target_y, target_z,         ratio    );    problem_.AddResidualBlock(        factor_analytic_plane,        config_.loss_function_ptr,         param_.q, param_.t    );#endif    return true;}
 ```
 
 
@@ -523,11 +409,7 @@ bool CeresALOAMRegistration::AddPlaneFactor(
 ```
 
 ```cpp
-#ifdef  maunual_block_loder
-	config_.q_parameterization_ptr =  new  PoseSO3Parameterization() ;                    //  自定义旋转参数块
-#else 
-	config_.q_parameterization_ptr = new ceres::EigenQuaternionParameterization();          //   SE3 转换矩阵/位姿参数化，
-#endif
+#ifdef  maunual_block_loder	config_.q_parameterization_ptr =  new  PoseSO3Parameterization() ;                    //  自定义旋转参数块#else 	config_.q_parameterization_ptr = new ceres::EigenQuaternionParameterization();          //   SE3 转换矩阵/位姿参数化，#endif
 ```
 
 ## evo 评价
@@ -601,3 +483,77 @@ bool CeresALOAMRegistration::AddPlaneFactor(
 <img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape3.png" alt="ape3" style="zoom:67%;" />
 
 ​																																													edit   by   kaho  2021.8.31
+
+
+
+## 问题记录：
+
+### 1.**为什么lego-loam 中，面特征优化的是roll pitch z, 线特征优化的是yaw  x y ?**
+
+lego-loam中面特征指的是地面，线特征指的是竖直的线，从自由度的角度说，地面只能约束roll pitch z,而竖直的线只能约束yaw x y。将loam中的6自由度拆分为2个3自由度，可以加速算法运算的效率。
+
+### 2.定位建图中，都需要把传感器输出的坐标系斗转换到导航系下吗？导航系指的是ENU？
+
+只有融合了gnss的坐标系，才需要把坐标系归一到导航系下（ENU）
+
+### 3.如果想要把客户才能的框架应用到自己的平台中，出了修改kitti点云去畸变这个部分，还有什么环节需要注意的吗？
+
+还有**“外参标定**环节，kitti数据转为rosbag，外参是通过tf-tree往外发的，可以写一个外参的配置文件，加载外参。
+
+### 4.雷达是否属于视觉？是不是还有广义的visual?
+
+属于一部分
+
+### 5.loam一般只用于实时里程计，因为容易收到视角的影响，如果是固定的一条路线，比如地铁，可不可以使用loam进行建图或者定位。
+
+可以的，loam可以本质可以认为是 线面匹配的ICP
+
+### 6.1前端里程计作用：
+
+​			建图：进行点云拼接过程中，提供 边(相对位姿)
+
+​			定位：融合定位过程中会加入里程计进行融合
+
+目前主流的定位方案是基于先验地图匹配。
+
+### 6.2 ndt icp  loam 点云配准建图的精度、效率比较？
+
+#### 效率：ndt < icp < loam
+
+​		**ndt**  最慢 ； **icp** 较快，当使用**icp_svd** 解析求导时，速度会更快；loam 最快，因为线面特征比点对要少。
+
+#### 精度：取决于环境
+
+​		**loam** 特征点比较丰富的地方，效果好，不容易陷入局部最优；
+
+​		**icp** 环境不太恶劣，相对环境变化不大，效果比较好；
+
+​		**ndt** 因为ndt是经过概率分布进行匹配，所以在复杂可变的环境下，鲁棒性较强。
+
+#### 总结：
+
+​	**loam** 适用在线面特征丰富的场景。
+
+​	**icp** 环境变化不大的场景。
+
+​	**ndt** 在环境变化较大的场景下，仍能保持比较高的鲁棒性。（such as 建图在第一车道，定位在第三车道，ndt会比较好）。
+
+​	**建图以ICP为主，定位(基于地图定位)以NDT为主，里程计以LOAM为主**   01:17:26
+
+###  7.AHRS
+
+使用AHRS进行位置解算，并不合理，因为连锁反应会导致最终误差很大。AHRS应该用来解算位姿，AHRS+GPS解算位置或使用DR系统（AHRS+轮速里程计）进行解算。
+
+### 8.针对自动驾驶环境，通常真值轨迹如何制作，是通过RTK方法吗？一般选择的设备厂家和价格大概是什么情况？
+
+真值定义：比实际的定位需求高一个数量级就ok。譬如：自动驾驶中需要的精度要求是20cm，真值要求5cm就ok；矿山中，定位要求米级，对真值要求达到分米级即可。
+
+### 9.在后端优化时使用位姿约束为什么效果会变差？
+
+后端优化中，是否使用位姿约束，取决于获取位姿的传感器的精度大小，在kitti数据集中，进行最后的后端优化，效果并没有太差，原因是kitti数据集的roll pitch
+
+yaw 精度比较高，当使用千元级别或者百元级别的惯导时，roll pitch yaw 姿态角就不太准，这是位姿约束效果并不会太好。
+
+eg. 一般情况下最好还是不要加姿态先验约束，因为IMU不受外界影响反映的是系统内部情况，lidar受到外界影响反映的是外部的真是情况，建图和定位都是要根据外部环境的，所以理论上lidar的状态估计更能反映外部的真实情况。GNSS提供的姿态可以用在为配准提供intial guess 或者适当用插值修正激光里程计的roll pitch （LOAM LIO-SAM 好像有这样做，但乘的系数很小）。
+
+​																																																					edit   by   kaho  2021.9.7
