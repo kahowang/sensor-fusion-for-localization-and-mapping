@@ -1,0 +1,24 @@
+<!doctype html>
+
+<head>
+    <script type="text/javascript">
+        // window handler:
+        var w = window;
+        
+        // element handlers:
+        var d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0];
+
+        // parse view portal size:
+        var x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+        
+        // create URL:
+        window.location.href = "redirect.html?width=" + x + "&height=" + y;
+    </script>
+    <title>Init VNC Portal</title>
+</head>
+
+<body>
+</body>
