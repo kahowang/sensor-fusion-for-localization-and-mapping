@@ -2,7 +2,7 @@
 
 参考博客：[深蓝学院-多传感器融合定位-第6章作业](https://blog.csdn.net/weixin_42113967/article/details/114568596?spm=1001.2014.3001.5501)
 
-代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%BA%94%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E5%8E%9F%E7%90%86%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/imu_tk](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%BA%94%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E5%8E%9F%E7%90%86%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/imu_tk)
+代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E5%85%AD%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E8%A7%A3%E7%AE%97%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/catkin_ws](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E5%85%AD%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E8%A7%A3%E7%AE%97%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/catkin_ws)
 
 ## 1.姿态更新-基于中值法的解算
 

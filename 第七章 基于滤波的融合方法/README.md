@@ -4,7 +4,7 @@
 
 本次作业：主要参考张松鹏大佬的代码，因为大佬的解析太好了，为了保留记录，以下大部分文字，均摘自大佬的原话~
 
-代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%BA%94%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E5%8E%9F%E7%90%86%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/imu_tk](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%BA%94%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E5%8E%9F%E7%90%86%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/imu_tk)
+代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%83%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%95/lidar_localization](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%83%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%95/lidar_localization)
 
 ## ![2021-10-09 18-43-09 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-09%2018-43-09%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)1.环境配置
 
@@ -104,8 +104,8 @@ FILE:   lidar_localization/src/model/kalman_filter/error_state_kalman_filter.cpp
 
 1) 预测部分接收imu数据,基于惯性解算更新名义值,基于状态方程更新误差值。
 2) 观测部分同时接收imu数据和定位数据,首先利用imu数据进行预测保证状态与定位数据
-  时间同步,然后基于观测方程计算误差值,最后利用误差值对名义值进行修正,并将误
-  差值清零。
+    时间同步,然后基于观测方程计算误差值,最后利用误差值对名义值进行修正,并将误
+    差值清零。
 
 ### 2.3   初始化： Init
 
