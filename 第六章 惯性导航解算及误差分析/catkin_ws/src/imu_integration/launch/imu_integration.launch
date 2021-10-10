@@ -1,0 +1,19 @@
+<launch>
+    <node pkg="tf" type="static_transform_publisher" name="ENU_broadcaster" args="0 0 0 0 0 0 inertial ENU 200" />
+    
+    <node pkg="imu_integration" type="generator_node" name="imu_integration_generator_node" clear_params="true">
+        <!-- load default params -->
+        <rosparam command="load" file="$(find imu_integration)/config/generator.yaml" />
+
+        <!-- custom configuration -->
+    </node>
+
+    <node pkg="imu_integration" type="estimator_node" name="imu_integration_estimator_node" clear_params="true">
+        <!-- load default params -->
+        <rosparam command="load" file="$(find imu_integration)/config/generator.yaml" />
+
+        <!-- custom configuration -->
+    </node>
+
+     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find imu_integration)/rviz/imu_integration.rviz" required="true" /> 
+</launch>

@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package scan_context_io;
+
+message RingKey {
+    repeated float data = 1;
+}
+
+message RingKeys {
+    repeated RingKey data = 1;
+}

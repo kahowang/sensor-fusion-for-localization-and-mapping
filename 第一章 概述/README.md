@@ -18,31 +18,27 @@
 
    
 
-#### . g2o
+#### 3. g2o
 
 ```shell
-// 从github上下载源码
-$ https://github.com/RainerKuemmerle/g2o/tree/20170730_git
+// 建议下载高博slam14讲的2017g2o 库
+https://github.com/jiajunhua/gaoxiang12-slambook/tree/master/3rdparty
 
 // 安装依赖
-$ sudo apt-get install cmake libeigen3-dev libsuitesparse-dev qtdeclarative5-dev qt5-qmake libqglviewer-dev
-
+sudo apt-get install cmake libeigen3-dev libsuitesparse-dev qtdeclarative5-dev qt5-qmake libqglviewer-dev
 
 // 编译
-$ cd g2o
-$ mkdir build
-$ cd build
-$ sudo ldconfig
-$ cmake ..
-$ make -j4
-
+cd g2o
+mkdir build
+cd build
+cmake ..
+make -j4
 //安装
 $ sudo make install
+sudo ldconfig
 ```
 
 **注：** 一定要在编译前进入build，进行sudo ldconfig
-
-
 
 #### 4. Ceres
 
@@ -115,6 +111,7 @@ $ sudo make install
 #### 7. glog
 
 ```shell
+sudo apt-get  install libgoogle-glog-dev
 // 克隆源码
 $ git clone https://github.com/boboxxd/glog.git
 
@@ -152,20 +149,15 @@ list(APPEND ALL_TARGET_LIBRARIES ${GLOG_LIBRARIES} libgflags.a libglog.a)
 
 #### 8. Sophus
 
+sophus库可以选择安装更加通用广泛的版本，[高博slam14讲中的sophus版本](https://github.com/gaoxiang12/slambook2/tree/master/3rdparty)
+
 ```shell
-// 克隆源码
-$ git clone https://github.com/strasdat/Sophus.git
-
-// 解压并进入文件夹
-$ cd Sophus
-$ git checkout a621ff
-
-// 编译及安装
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make -j4
-$ sudo make install
+#下载高博slam14讲的sophus版本后
+cd  Sophus
+mkdir  build
+cd  build
+make -j8
+sudo make install
 ```
 
 注: make编译时如果有报错，如下图:
@@ -204,21 +196,16 @@ $ sudo make install
 
 
 
-#### 10. Protobuf
+#### 10. Protobuf 3.14.x 
+
+[protobuf3.14.x下载链接](https://github.com/protocolbuffers/protobuf/tree/3.14.x)
 
 ```bash
-// 克隆源码&自行下载 - V3.13
-$ https://github.com/protocolbuffers/protobuf/tree/3.13.x
-
-// 解压并进入文件夹
-$ unzip protobuf-3.13.x.zip
-$ cd protobuf-3.13.x
-
-// 编译及安装
-$ ./autogen.sh
-$ ./configure
-$ make
-$ sudo make install
+cd protobuf-3.14.x
+./autogen.sh
+./configure
+make
+sudo make install
 ```
 
 ## 代码编译、运行

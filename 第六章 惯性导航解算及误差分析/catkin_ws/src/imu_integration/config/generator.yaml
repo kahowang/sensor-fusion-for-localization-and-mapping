@@ -1,0 +1,27 @@
+imu:
+    device_name: GNSS_INS_SIM_IMU
+    topic_name: /sim/sensor/imu
+    frame_id: ENU
+    gravity:
+        x:  0.0
+        y:  0.0
+        z: -9.81
+    bias:
+        angular_velocity:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+        linear_acceleration:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+    gyro:
+        sigma_bias: 0
+        sigma_noise: 0
+    acc:
+        sigma_bias: 0
+        sigma_noise: 0
+
+pose:
+    frame_id: inertial
+    topic_name: /pose/ground_truth

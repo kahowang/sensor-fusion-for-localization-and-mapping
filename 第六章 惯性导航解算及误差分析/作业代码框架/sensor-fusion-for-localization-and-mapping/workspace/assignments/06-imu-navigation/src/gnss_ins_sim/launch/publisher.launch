@@ -1,0 +1,3 @@
+<launch>
+    <node name="gnss_ins_sim_publisher_node" pkg="gnss_ins_sim" type="publisher_node.py" />
+</launch>

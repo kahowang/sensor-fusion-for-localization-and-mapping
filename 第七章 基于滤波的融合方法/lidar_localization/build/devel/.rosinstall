@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/kaho/catkin_ws/src/lidar_localization/build/devel/setup.sh

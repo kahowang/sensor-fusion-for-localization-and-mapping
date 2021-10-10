@@ -1,0 +1,2 @@
+set(lidar_localization_MESSAGE_FILES "/home/kaho/catkin_ws/src/lidar_localization/msg/IMUGNSSMeasurement.msg;/home/kaho/catkin_ws/src/lidar_localization/msg/LidarMeasurement.msg;/home/kaho/catkin_ws/src/lidar_localization/msg/ESKFStd.msg;/home/kaho/catkin_ws/src/lidar_localization/msg/EKFStd.msg;/home/kaho/catkin_ws/src/lidar_localization/msg/PosVel.msg;/home/kaho/catkin_ws/src/lidar_localization/msg/PosVelMag.msg")
+set(lidar_localization_SERVICE_FILES "/home/kaho/catkin_ws/src/lidar_localization/srv/saveOdometry.srv")

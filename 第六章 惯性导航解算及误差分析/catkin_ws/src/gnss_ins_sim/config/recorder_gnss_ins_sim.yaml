@@ -1,0 +1,15 @@
+# motion def:
+motion_file: recorder_gnss_ins_sim_speedup_down.csv
+# IMU params:
+imu: 1
+# sample frequency of simulated GNSS/IMU data:
+sample_frequency:
+    imu: 100.0
+    gps: 10.0
+# topic name:
+topic_name_imu: /sim/sensor/imu
+topic_name_gt:  /pose/ground_truth
+# output rosbag path:
+output_path: /home/kaho/catkin_ws/src/data/gnss_ins_sim/recorder_gnss_ins_sim
+# output name:
+output_name: speedup_down.bag

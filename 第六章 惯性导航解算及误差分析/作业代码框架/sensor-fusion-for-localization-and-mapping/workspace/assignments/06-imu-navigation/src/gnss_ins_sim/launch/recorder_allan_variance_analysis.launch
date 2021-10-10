@@ -1,0 +1,8 @@
+<launch>
+    <node name="gnss_ins_sim_recorder_node" pkg="gnss_ins_sim" type="recorder_node_allan_variance_analysis.py">
+        <!-- load default params -->
+        <rosparam command="load" file="$(find gnss_ins_sim)/config/recorder_allan_variance_analysis.yaml" />
+
+        <!-- configuration -->
+    </node>
+</launch>

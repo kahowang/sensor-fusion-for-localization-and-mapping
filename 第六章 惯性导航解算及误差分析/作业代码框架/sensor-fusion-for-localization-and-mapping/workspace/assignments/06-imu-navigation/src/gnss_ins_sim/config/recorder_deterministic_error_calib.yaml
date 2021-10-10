@@ -1,0 +1,14 @@
+# motion def:
+motion_file: deterministic_error_calib.csv
+# IMU params:
+imu: 1
+# sample frequency of simulated GNSS/IMU data:
+sample_frequency:
+    imu: 100.0
+    gps: 10.0
+# topic name:
+topic_name: /sim/sensor/imu
+# output rosbag path:
+output_path: /workspace/data/gnss_ins_sim/deterministic_error
+# output name:
+output_name: data.csv

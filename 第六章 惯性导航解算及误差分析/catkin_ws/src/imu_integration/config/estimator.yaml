@@ -1,0 +1,21 @@
+imu:
+    topic_name: /sim/sensor/imu
+    gravity:
+        x:  0.0
+        y:  0.0
+        z: -9.81
+    bias:
+        angular_velocity:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+        linear_acceleration:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+            
+pose:
+    frame_id: inertial
+    topic_name: 
+        ground_truth: /pose/ground_truth
+        estimation: /pose/estimation
