@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     // a. raw Velodyne measurement
     // b. raw GNSS/IMU measurement
     // publish
-    // a. undistorted Velodyne measurement
+    // a. undistorted Velodyne measurement        发布没有去畸变的点云信息
     // b. lidar pose in map frame
     std::shared_ptr<DataPretreatFlow> data_pretreat_flow_ptr = std::make_shared<DataPretreatFlow>(nh, cloud_topic);
 

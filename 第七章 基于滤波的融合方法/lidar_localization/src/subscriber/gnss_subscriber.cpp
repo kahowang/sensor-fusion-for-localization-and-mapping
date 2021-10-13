@@ -8,12 +8,12 @@
 #include "glog/logging.h"
 
 namespace lidar_localization {
-GNSSSubscriber::GNSSSubscriber(ros::NodeHandle& nh, std::string topic_name, size_t buff_size) 
+GNSSSubscriber::GNSSSubscriber(ros::NodeHandle& nh, std::string topic_name, size_t buff_size)      // 类的调用，调用了该类后，可以生成一个订阅
     :nh_(nh) {
     subscriber_ = nh_.subscribe(topic_name, buff_size, &GNSSSubscriber::msg_callback, this);
 }
 
-void GNSSSubscriber::msg_callback(const sensor_msgs::NavSatFixConstPtr& nav_sat_fix_ptr) {
+void GNSSSubscriber::msg_callback(const sensor_msgs::NavSatFixConstPtr& nav_sat_fix_ptr) {   // callback,接受和处理消息的地方 
     buff_mutex_.lock();
 
     // convert ROS NavSatFix to GeographicLib compatible GNSS message:
@@ -30,7 +30,7 @@ void GNSSSubscriber::msg_callback(const sensor_msgs::NavSatFixConstPtr& nav_sat_
     buff_mutex_.unlock();
 }
 
-void GNSSSubscriber::ParseData(std::deque<GNSSData>& gnss_data_buff) {
+void GNSSSubscriber::ParseData(std::deque<GNSSData>& gnss_data_buff) {    //  实现从类里取数据
     buff_mutex_.lock();
 
     // pipe all available measurements to output buffer:

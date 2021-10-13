@@ -149,8 +149,8 @@ void ErrorStateKalmanFilter::Init(const Eigen::Vector3d &vel,
                                    imu_data.angular_velocity.y,
                                    imu_data.angular_velocity.z);
   // covert to navigation frame:    //  把 IMU 的 velocity     angular（flu系）转换到 导航系 下 
-  linear_acc_init = GetUnbiasedLinearAcc(linear_acc_init, C_nb);
-  angular_vel_init = GetUnbiasedAngularVel(angular_vel_init, C_nb);
+  linear_acc_init =  linear_acc_init - accl_bias_;            //  body 系下
+  angular_vel_init = GetUnbiasedAngularVel(angular_vel_init, C_nb);      // body 系下
   // init process equation, in case of direct correct step:
   UpdateProcessEquation(linear_acc_init, angular_vel_init);
 
@@ -523,7 +523,7 @@ void ErrorStateKalmanFilter::UpdateProcessEquation(
     const Eigen::Vector3d &linear_acc_mid,
     const Eigen::Vector3d &angular_vel_mid) {
   // set linearization point:
-  Eigen::Matrix3d C_nb = pose_.block<3, 3>(0, 0);           //   n2b   转换矩阵
+  Eigen::Matrix3d C_nb = pose_.block<3, 3>(0, 0);           //   b2n   转换矩阵
   Eigen::Vector3d f_b = linear_acc_mid + g_;                     //   加速度
   Eigen::Vector3d w_b = angular_vel_mid;                         //   角速度
 

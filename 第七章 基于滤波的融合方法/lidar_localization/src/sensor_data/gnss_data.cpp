@@ -7,6 +7,7 @@
 
 #include "glog/logging.h"
 #include <ostream>
+#include <iostream>
 
 //静态成员变量必须在类外初始化
 double lidar_localization::GNSSData::origin_latitude = 0.0;
@@ -17,8 +18,9 @@ GeographicLib::LocalCartesian lidar_localization::GNSSData::geo_converter;
 
 namespace lidar_localization {
 void GNSSData::InitOriginPosition() {
-    geo_converter.Reset(latitude, longitude, altitude);
-
+    //geo_converter.Reset(latitude, longitude, altitude);
+    geo_converter.Reset(48.982658,  8.390455, 116.396412);         //   设置原点
+    std::cout << "----------------------init  OriginPosition -------------------------------"   << std::endl;   
     origin_latitude = latitude;
     origin_longitude = longitude;
     origin_altitude = altitude;
@@ -50,17 +52,17 @@ bool GNSSData::SyncData(std::deque<GNSSData>& UnsyncedData, std::deque<GNSSData>
     // 即找到与同步时间相邻的左右两个数据
     // 需要注意的是，如果左右相邻数据有一个离同步时间差值比较大，则说明数据有丢失，时间离得太远不适合做差值
     while (UnsyncedData.size() >= 2) {
-        if (UnsyncedData.front().time > sync_time)
+        if (UnsyncedData.front().time > sync_time)             //  1）如果第一个数据时间比雷达时间还要靠后，即插入时刻的前面没有数据，那么就无从插入，直接退出
             return false;
-        if (UnsyncedData.at(1).time < sync_time) {
+        if (UnsyncedData.at(1).time < sync_time) {              //  2）如果第一个数据比插入时刻早，第二个数据也比插入时刻早，那么第一个时刻的数据是没意义的，应该接着往下找，并删除第一个数据
             UnsyncedData.pop_front();
             continue;
         }
-        if (sync_time - UnsyncedData.front().time > 0.2) {
+        if (sync_time - UnsyncedData.front().time > 0.2) {   // 3）如果雷达采集时刻已经处在前两个数据的中间了，但是第一个数据时刻与雷达采集时刻时间差过大，那么中间肯定丢数据了，退出
             UnsyncedData.pop_front();
             return false;
         }
-        if (UnsyncedData.at(1).time - sync_time > 0.2) {
+        if (UnsyncedData.at(1).time - sync_time > 0.2) {       // 4）同样，如果第二个数据时刻与雷达采集时刻时间差过大，那么也是丢数据了，也退出
             UnsyncedData.pop_front();
             return false;
         }
@@ -69,8 +71,8 @@ bool GNSSData::SyncData(std::deque<GNSSData>& UnsyncedData, std::deque<GNSSData>
     if (UnsyncedData.size() < 2)
         return false;
 
-    GNSSData front_data = UnsyncedData.at(0);
-    GNSSData back_data = UnsyncedData.at(1);
+    GNSSData front_data = UnsyncedData.at(0);           //  前一个数据
+    GNSSData back_data = UnsyncedData.at(1);           //  后一个数据
     GNSSData synced_data;
 
     double front_scale = (back_data.time - sync_time) / (back_data.time - front_data.time);

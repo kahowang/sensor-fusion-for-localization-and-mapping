@@ -7,7 +7,7 @@
 
 #include "glog/logging.h"
 #include "lidar_localization/global_defination/global_defination.h"
-
+ 
 namespace lidar_localization {
 DataPretreatFlow::DataPretreatFlow(ros::NodeHandle& nh, std::string cloud_topic) {
     // subscribers:
@@ -19,26 +19,26 @@ DataPretreatFlow::DataPretreatFlow(ros::NodeHandle& nh, std::string cloud_topic)
     velocity_sub_ptr_ = std::make_shared<VelocitySubscriber>(nh, "/kitti/oxts/gps/vel", 1000000);
     // d. OXTS GNSS:
     gnss_sub_ptr_ = std::make_shared<GNSSSubscriber>(nh, "/kitti/oxts/gps/fix", 1000000);
-    lidar_to_imu_ptr_ = std::make_shared<TFListener>(nh, "/imu_link", "/velo_link");
+    lidar_to_imu_ptr_ = std::make_shared<TFListener>(nh, "/imu_link", "/velo_link");                                    //  订阅 lidar 和 imu tf 变换
 
-    // publishers:
-    cloud_pub_ptr_ = std::make_shared<CloudPublisher>(nh, cloud_topic, "/velo_link", 100);
-    imu_pub_ptr_ = std::make_shared<IMUPublisher>(nh, "/synced_imu", "/imu_link", 100);
-    pos_vel_pub_ptr_ = std::make_shared<PosVelPublisher>(nh, "/synced_pos_vel", "/map", "/imu_link", 100);
-    gnss_pub_ptr_ = std::make_shared<OdometryPublisher>(nh, "/synced_gnss", "/map", "/velo_link", 100);
+    // publishers:    
+    cloud_pub_ptr_ = std::make_shared<CloudPublisher>(nh, cloud_topic, "/velo_link", 100);                                 //   发布去畸变后的点云数据
+    imu_pub_ptr_ = std::make_shared<IMUPublisher>(nh, "/synced_imu", "/imu_link", 100);                                 //    发布时间同步后的imu数据
+    pos_vel_pub_ptr_ = std::make_shared<PosVelPublisher>(nh, "/synced_pos_vel", "/map", "/imu_link", 100);           //  发布IMU基于map坐标的  position 和  velocity 信息
+    gnss_pub_ptr_ = std::make_shared<OdometryPublisher>(nh, "/synced_gnss", "/map", "/velo_link", 100);                //   发布同步后的gnss 信息  包含 gnss 读取的基于 map的 pose  和 velocity信息
 
     // motion compensation for lidar measurement:
-    distortion_adjust_ptr_ = std::make_shared<DistortionAdjust>();
+    distortion_adjust_ptr_ = std::make_shared<DistortionAdjust>();               // 点云去畸变
 }
 
 bool DataPretreatFlow::Run() {
-    if (!ReadData())
+    if (!ReadData())                        //  读数据，判断是否有数据，以雷达为基准，进行传感器数据的插值
         return false;
 
-    if (!InitCalibration()) 
+    if (!InitCalibration())              //   初始化标定文件
         return false;
 
-    if (!InitGNSS())
+    if (!InitGNSS())                          //   初始化 gnss
         return false;
 
     while(HasData()) {
@@ -46,19 +46,19 @@ bool DataPretreatFlow::Run() {
             continue;
 
         TransformData();
-        PublishData();
+        PublishData();                        //  发送数据
     }
 
     return true;
 }
 
 bool DataPretreatFlow::ReadData() {
-    static std::deque<IMUData> unsynced_imu_;
-    static std::deque<VelocityData> unsynced_velocity_;
-    static std::deque<GNSSData> unsynced_gnss_;
+    static std::deque<IMUData> unsynced_imu_;               //  未同步的IMU信息
+    static std::deque<VelocityData> unsynced_velocity_;                 //   未同步的velocity信息
+    static std::deque<GNSSData> unsynced_gnss_;                            //    未同步的gnss信息
 
     // fetch lidar measurements from buffer:
-    cloud_sub_ptr_->ParseData(cloud_data_buff_);
+    cloud_sub_ptr_->ParseData(cloud_data_buff_);               //   从ros中读取 raw data，并存到队列里
     imu_sub_ptr_->ParseData(unsynced_imu_);
     velocity_sub_ptr_->ParseData(unsynced_velocity_);
     gnss_sub_ptr_->ParseData(unsynced_gnss_);
@@ -67,11 +67,11 @@ bool DataPretreatFlow::ReadData() {
         return false;
 
     // use timestamp of lidar measurement as reference:
-    double cloud_time = cloud_data_buff_.front().time;
+    double cloud_time = cloud_data_buff_.front().time;                        //  使用雷达的时间为参考时间
     // sync IMU, velocity and GNSS with lidar measurement:
     // find the two closest measurement around lidar measurement time
-    // then use linear interpolation to generate synced measurement:
-    bool valid_imu = IMUData::SyncData(unsynced_imu_, imu_data_buff_, cloud_time);
+    // then use linear interpolation to generate synced measurement:    使用线性插值的方法去同步时间
+    bool valid_imu = IMUData::SyncData(unsynced_imu_, imu_data_buff_, cloud_time);         //   cloud_time 索引  
     bool valid_velocity = VelocityData::SyncData(unsynced_velocity_, velocity_data_buff_, cloud_time);
     bool valid_gnss = GNSSData::SyncData(unsynced_gnss_, gnss_data_buff_, cloud_time);
 
@@ -188,8 +188,8 @@ bool DataPretreatFlow::TransformData() {
 
     // c. motion compensation for lidar measurements:
     current_velocity_data_.TransformCoordinate(lidar_to_imu_);
-    distortion_adjust_ptr_->SetMotionInfo(0.1, current_velocity_data_);
-    distortion_adjust_ptr_->AdjustCloud(current_cloud_data_.cloud_ptr, current_cloud_data_.cloud_ptr);
+    distortion_adjust_ptr_->SetMotionInfo(0.1, current_velocity_data_);     // 每次去畸变前输入运动信息
+    distortion_adjust_ptr_->AdjustCloud(current_cloud_data_.cloud_ptr, current_cloud_data_.cloud_ptr);          //  激光点坐标转换
 
     return true;
 }

@@ -4,7 +4,7 @@
 
 本次作业：主要参考张松鹏大佬的代码，因为大佬的解析太好了，为了保留记录，以下大部分文字，均摘自大佬的原话~
 
-代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%83%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%95/lidar_localization](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%83%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%95/lidar_localization)
+代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%BA%94%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E5%8E%9F%E7%90%86%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/imu_tk](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%83%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%95/lidar_localization)
 
 ## ![2021-10-09 18-43-09 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-09%2018-43-09%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)1.环境配置
 
@@ -122,10 +122,47 @@ FUNCTION: ErrorStateKalmanFilter::ErrorStateKalmanFilter(const YAML::Node &node)
                                    imu_data.angular_velocity.y,
                                    imu_data.angular_velocity.z);
   // covert to navigation frame:    //  把 IMU 的 velocity     angular（flu系）转换到 导航系 下 
-  linear_acc_init = GetUnbiasedLinearAcc(linear_acc_init, C_nb);
+  linear_acc_init =  linear_acc_init - accl_bias_;            //  body 系下  
   angular_vel_init = GetUnbiasedAngularVel(angular_vel_init, C_nb);
   // init process equation, in case of direct correct step:
   UpdateProcessEquation(linear_acc_init, angular_vel_init);
+```
+
+这里有个之前一直忽略的点，在此mark下笔记：
+
+```cpp
+inline Eigen::Vector3d ErrorStateKalmanFilter::GetUnbiasedAngularVel(
+    const Eigen::Vector3d &angular_vel, const Eigen::Matrix3d &R) {
+  return angular_vel - gyro_bias_;
+}
+```
+
+```cpp
+inline Eigen::Vector3d
+ErrorStateKalmanFilter::GetUnbiasedLinearAcc(const Eigen::Vector3d &linear_acc,
+                                             const Eigen::Matrix3d &R) {
+  return R * (linear_acc - accl_bias_) - g_;
+}
+```
+
+两个函数，区别在于，惯性解算时
+
+ 更新四元数时，只需要得到相对旋转，在body系下就可以得到相对旋转，所以不需要乘以R。
+
+ 更新位置时，需要把速度转换到n系下，所以需要乘以R。
+
+在init filter 初始化滤波器时，
+
+angular_vel_init 、linear_acc_init 都是b 系下的
+
+```cpp
+// 可以调用 GetUnbiasedAngularVel ，因为角速度仍然时在b系下的
+angular_vel_init = GetUnbiasedAngularVel(angular_vel_init, C_nb);      
+```
+
+```cpp
+// 不可以调用 GetUnbiasedLinearAcc ，因为调用后加速度换左乘R，变换到n系下的
+linear_acc_init =  linear_acc_init - accl_bias_;            //  body 系下
 ```
 
 ### 2.4 预测:   Update
@@ -418,7 +455,7 @@ void ErrorStateKalmanFilter::ResetState(void) {
 # build:
 catkin_make
 # set up session:
-source install/setup.bash
+source devel/setup.bash
 # launch:
 roslaunch lidar_localization kitti_localization.launch
 ```
@@ -883,5 +920,263 @@ laser.txt  1.13668  0.230928  0.163564  0.0174648  0.289055  367.298  0.173854
 
 ![2021-10-10 14-23-49 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-10%2014-23-49%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)
 
-​																																																					edited by kaho 2021.10.10
+## 5. Gnss 定位原点初始化 bug 修复
+
+### 现象描述：
+
+1.多次运行第七章课程框架中kalman filter  localization 时，结束后，laser_odom 的evo 精度评估数据都不太一样，ape  mean 从 0.2 到 4，均有变化。
+
+### 解决：
+
+FILE :  catkin_ws/src/lidar_localization/src/filtering/kitti_filtering_flow.cpp
+
+初始化滤波部分，使用的是scancontext，可能是sc 初始化出现问题，导致每次数据都有差别，所以打算换成“第四章”的gnss初始化。
+
+```cpp
+bool KITTIFilteringFlow::InitLocalization(void) {
+  // ego vehicle velocity in body frame:
+  Eigen::Vector3f init_vel = current_pos_vel_data_.vel;
+
+   first try to init using scan context query:
+   if (filtering_ptr_->Init(current_cloud_data_, init_vel,
+                           current_imu_synced_data_)) {
+  //   // prompt:
+     LOG(INFO) << "Scan Context Localization Init Succeeded." << std::endl;
+   }
+  return true;
+}
+```
+
+### 修改如下：
+
+#### filtering_ptr_ -> Init()
+
+在 FILE:    catkin_ws/src/lidar_localization/src/filtering/kitti_filtering.cpp  框架中，已定义好  使用 scancontext 和 gnss   两种init pose的方式，无需我们再写
+
+```cpp
+/*   scan contexxt  初始化  pose ，  输入 point cloud_*/
+bool KITTIFiltering::Init(const CloudData &init_scan,
+                          const Eigen::Vector3f &init_vel,
+                          const IMUData &init_imu_data) {
+  if (SetInitScan(init_scan)) {
+    current_vel_ = init_vel;
+
+    kalman_filter_ptr_->Init(current_vel_.cast<double>(), init_imu_data);
+
+    return true;
+  }
+
+  return false;
+}
+
+/*   gnss   初始化  pose ，  输入  martix4d   current_gnss_pose_*/
+bool KITTIFiltering::Init(const Eigen::Matrix4f &init_pose,
+                          const Eigen::Vector3f &init_vel,
+                          const IMUData &init_imu_data) {
+  if (SetInitGNSS(init_pose)) {
+    current_vel_ = init_vel;
+
+    kalman_filter_ptr_->Init(current_vel_.cast<double>(), init_imu_data);
+
+    return true;
+  }
+
+  return false;
+}
+```
+
+#### 修改 1 ：  InitLocalization()   调用 Init()  方法
+
+FILE :   catkin_ws/src/lidar_localization/src/filtering/kitti_filtering_flow.cpp
+
+```CPP
+bool KITTIFilteringFlow::InitLocalization(void) {
+  // ego vehicle velocity in body frame:
+  Eigen::Vector3f init_vel = current_pos_vel_data_.vel;
+
+  // first try to init using scan context query:
+  // if (filtering_ptr_->Init(current_cloud_data_, init_vel,
+  //                          current_imu_synced_data_)) {
+  //   // prompt:
+  //   LOG(INFO) << "Scan Context Localization Init Succeeded." << std::endl;
+  // }
+
+  //   first try to init using gnss  init:
+   if  (filtering_ptr_->Init(current_gnss_data_.pose, init_vel,
+                            current_imu_synced_data_)){
+    // prompt:
+    LOG(INFO) << "Gnss Localization Init Succeeded." << std::endl;
+  }
+
+  return true;
+}
+```
+
+#### 修改2 ： 按照第四章gnss 初始化的部分修改, 初始化经纬高
+
+通过记录获得建图时gnss 原点坐标为：
+
+```yaml
+latitude   =  48.9825452359;
+longitude =  8.39036610005;
+altitude  = 116.382141113;
+```
+
+将建图原点的"经纬高" 转换为到导航系(ENU系)下的原点
+
+FILE: lidar_localization/src/sensor_data/gnss_data.cpp
+
+```cpp
+void GNSSData::InitOriginPosition() {
+    geo_converter.Reset(48.982658,  8.390455, 116.396412);         //   设置原点
+
+    origin_longitude = longitude;
+    origin_latitude = latitude;
+    origin_altitude = altitude;
+    origin_position_inited = true;
+}
+```
+
+#### 修改3 ： 修复 current_gnss_data_ 没有更新问题
+
+##### 现象：按照如上方法，修改后，运行程序，初始化的gnss pose，发现定位有问题，通过打印 **current_gnss_data_.pose**，发现无论数据集在哪个地方开始播放，init gnss pose的值都是一个 4x4 的 单位阵，明显不正确。
+
+##### 问题所在： **current_gnss_data_.pose** 在本章节的框架中，只在save_odometry  保存groundtruth.txt  数据集被赋值，在其他地方没有被更新。
+
+原框架中只在save_odometry 中更新 current_gnss_data_.pose
+
+```cpp
+bool KITTIFilteringFlow::SaveOdometry(void) {
+  if (0 == trajectory.N) {
+    return false;
+  }
+
+  // init output files:
+  std::ofstream fused_odom_ofs;
+  std::ofstream laser_odom_ofs;
+  std::ofstream ref_odom_ofs;
+  if (!FileManager::CreateFile(fused_odom_ofs,
+                               WORK_SPACE_PATH +
+                                   "/slam_data/trajectory/fused.txt") ||
+      !FileManager::CreateFile(laser_odom_ofs,
+                               WORK_SPACE_PATH +
+                                   "/slam_data/trajectory/laser.txt") ||
+      !FileManager::CreateFile(ref_odom_ofs,
+                               WORK_SPACE_PATH +
+                                   "/slam_data/trajectory/ground_truth.txt")) {
+    return false;
+  }
+
+  // write outputs:
+  for (size_t i = 0; i < trajectory.N; ++i) {
+    // sync ref pose with gnss measurement:
+    while (!gnss_data_buff_.empty() &&
+           (gnss_data_buff_.front().time - trajectory.time_.at(i) <= -0.05)) {
+      gnss_data_buff_.pop_front();
+    }
+
+    if (gnss_data_buff_.empty()) {
+      break;
+    }
+
+    current_gnss_data_ = gnss_data_buff_.front();
+
+    const Eigen::Vector3f &position_ref =
+        current_gnss_data_.pose.block<3, 1>(0, 3);
+    const Eigen::Vector3f &position_lidar =
+        trajectory.lidar_.at(i).block<3, 1>(0, 3);
+
+    if ((position_ref - position_lidar).norm() > 3.0) {
+      continue;
+    }
+
+    SavePose(trajectory.fused_.at(i), fused_odom_ofs);
+    SavePose(trajectory.lidar_.at(i), laser_odom_ofs);
+    SavePose(current_gnss_data_.pose, ref_odom_ofs);
+  }
+
+  return true;
+}
+```
+
+##### 解决
+
+在  InitLocalization()  函数中，更新current_gnss_data_ 
+
+注意：这里有个地方需要注意的是，GNSS数据一般前几帧都是不准确，所以我们舍弃前三帧, 取第四帧, 需要对  SetInitGNSS  函数进行修改一下，修改为使用第四帧的gnss数据进行gnss pose 初始化。
+
+FILE :   catkin_ws/src/lidar_localization/src/filtering/kitti_filtering_flow.cpp   
+
+```cpp
+bool KITTIFilteringFlow::InitLocalization(void) {
+  // ego vehicle velocity in body frame:
+  Eigen::Vector3f init_vel = current_pos_vel_data_.vel;
+
+  // first try to init using scan context query:
+  // if (filtering_ptr_->Init(current_cloud_data_, init_vel,
+  //                          current_imu_synced_data_)) {
+  //   // prompt:
+  //   LOG(INFO) << "Scan Context Localization Init Succeeded." << std::endl;
+  // }
+
+  //   first try to init using gnss  init:
+  static int gnss_count = 0;
+  if(!(gnss_count  >3)){
+        current_gnss_data_ =  gnss_data_buff_.at(gnss_count);            //   舍弃GNSS的第三帧数据
+        // std::cout  << " gnss_data_buff_   "   <<  gnss_count  << "  "   <<  current_gnss_data_.pose << std::endl;
+  }
+  gnss_count  ++ ;
+   if  (filtering_ptr_->Init(current_gnss_data_.pose, init_vel,
+                            current_imu_synced_data_)){
+    // prompt:
+    LOG(INFO) << "Gnss Localization Init Succeeded." << std::endl;
+  }
+
+  return true;
+}
+```
+
+FILE :   catkin_ws/src/lidar_localization/src/filtering/kitti_filtering.cpp
+
+```cpp
+bool KITTIFiltering::SetInitGNSS(const Eigen::Matrix4f &gnss_pose) {
+  static int gnss_cnt = 0;
+
+  current_gnss_pose_ = gnss_pose;
+
+  // if (gnss_cnt == 0) {              //   一般gnss 数据，前几帧都不准，所以取第三帧
+  //   SetInitPose(gnss_pose);
+  // } else if (gnss_cnt > 3) {
+  //   has_inited_ = true;
+  // }
+  if (gnss_cnt > 3) {
+    has_inited_ = true;
+  }
+  SetInitPose(gnss_pose);
+  gnss_cnt++;
+  return true;
+}
+```
+
+###    结果：
+
+1.能够成功实现gnss 初始化，并在地图任意一点启动，初始化成功。
+
+2.经过6次，同一套kalman 参数的实验，得出的evo 结果大致一样，可以认为修复了 每次启动evo评估结果不同的问题。
+
+![image-20211012133329089](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11image-20211012133329089.png)
+
+六次同一参数  evo 评估结果 ，大致相等
+
+| ![2021-10-12 09-52-34 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2009-52-34%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
+| ------------------------------------------------------------ |
+| ![2021-10-12 10-10-35 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2010-10-35%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
+| ![2021-10-12 10-27-25 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2010-27-25%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
+| ![2021-10-12 10-56-23 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2010-56-23%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
+| ![2021-10-12 12-32-51 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2012-32-51%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
+| ![2021-10-12 13-21-40 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2013-21-40%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
+
+
+
+​																																																					edited by kaho 2021.10.12
 
