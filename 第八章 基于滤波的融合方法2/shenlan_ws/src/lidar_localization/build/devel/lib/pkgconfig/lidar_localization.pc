@@ -1,0 +1,8 @@
+prefix=/home/kaho/shenlan_ws/src/lidar_localization/build/devel
+
+Name: lidar_localization
+Description: Description of lidar_localization
+Version: 0.0.0
+Cflags: -I/home/kaho/shenlan_ws/src/lidar_localization/build/devel/include
+Libs: -L${prefix}/lib 
+Requires: 

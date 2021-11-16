@@ -431,15 +431,16 @@ bool ErrorStateKalmanFilter::GetVelocityDelta(
   Eigen::Vector3d linear_acc_curr = Eigen::Vector3d(
       imu_data_curr.linear_acceleration.x, imu_data_curr.linear_acceleration.y,
       imu_data_curr.linear_acceleration.z);
-  linear_acc_curr = GetUnbiasedLinearAcc(linear_acc_curr, R_curr);
+  Eigen::Vector3d  a_curr = GetUnbiasedLinearAcc(linear_acc_curr, R_curr);        //  w系下的a_curr
   Eigen::Vector3d linear_acc_prev = Eigen::Vector3d(
       imu_data_prev.linear_acceleration.x, imu_data_prev.linear_acceleration.y,
       imu_data_prev.linear_acceleration.z);
-  linear_acc_prev = GetUnbiasedLinearAcc(linear_acc_prev, R_prev);             //   转换到B系下
-
+  Eigen::Vector3d  a_prev = GetUnbiasedLinearAcc(linear_acc_prev, R_prev);        //  w系下的a_prev
   // mid-value acc can improve error state prediction accuracy:
-  linear_acc_mid = 0.5 * (linear_acc_curr + linear_acc_prev);
+  linear_acc_mid = 0.5 * (a_curr + a_prev);     //  w 系下的linear_acc_mid , 用于更新pos_w 和 vel_w
   velocity_delta = T * linear_acc_mid;
+
+  linear_acc_mid = 0.5 * (linear_acc_curr + linear_acc_prev) - accl_bias_;      //  b 系下的linear_acc_mid
 
   return true;
 }
@@ -524,7 +525,7 @@ void ErrorStateKalmanFilter::UpdateProcessEquation(
     const Eigen::Vector3d &angular_vel_mid) {
   // set linearization point:
   Eigen::Matrix3d C_nb = pose_.block<3, 3>(0, 0);           //   b2n   转换矩阵
-  Eigen::Vector3d f_b = linear_acc_mid + g_;                     //   加速度
+  Eigen::Vector3d f_b = linear_acc_mid ; //+ g_;                     //   加速度
   Eigen::Vector3d w_b = angular_vel_mid;                         //   角速度
 
   // set process equation:

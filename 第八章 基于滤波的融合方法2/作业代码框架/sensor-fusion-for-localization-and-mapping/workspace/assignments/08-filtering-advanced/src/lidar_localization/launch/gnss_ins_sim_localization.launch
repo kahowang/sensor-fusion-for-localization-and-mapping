@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="rviz"  type="rviz"  name="rviz"  args="-d $(find lidar_localization)/rviz/gnss_ins_sim_localization.rviz"></node>
+    <node pkg="lidar_localization"  type="gnss_ins_sim_preprocess_node"  name="gnss_ins_sim_preprocess_node"  output="screen"></node>
+    <node pkg="lidar_localization"  type="gnss_ins_sim_filtering_node"  name="gnss_ins_sim_filtering_node"  output="screen"></node>
+</launch>

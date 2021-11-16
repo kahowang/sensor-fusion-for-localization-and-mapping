@@ -111,7 +111,7 @@ FILE:   lidar_localization/src/model/kalman_filter/error_state_kalman_filter.cpp
 
 这里特别注意,框架是基于第一期课程,其中的旋转误差放在了导航系(n系)下,而第三期将旋转误差放在了机器人坐标系(b系)下,所以公式有所不同,特别是状态方程所用到的加速度应该是在b系下,也就是UpdateProcessEquation函数传入的linear_acc_mid应该是在b系下。所有调用到这个函数的地方都应该进行修改。
 
-FUNCTION: ErrorStateKalmanFilter::ErrorStateKalmanFilter(const YAML::Node &node) {}
+修改1：FUNCTION: ErrorStateKalmanFilter::ErrorStateKalmanFilter(const YAML::Node &node) {}
 
 ```cpp
   // set process equation in case of one step prediction & correction:
@@ -126,6 +126,40 @@ FUNCTION: ErrorStateKalmanFilter::ErrorStateKalmanFilter(const YAML::Node &node)
   angular_vel_init = GetUnbiasedAngularVel(angular_vel_init, C_nb);
   // init process equation, in case of direct correct step:
   UpdateProcessEquation(linear_acc_init, angular_vel_init);
+```
+
+修改2：FUNCTION: ErrorStateKalmanFilter::GetVelocityDelta( )
+
+```cpp
+bool ErrorStateKalmanFilter::GetVelocityDelta(
+    const size_t index_curr, const size_t index_prev,
+    const Eigen::Matrix3d &R_curr, const Eigen::Matrix3d &R_prev, double &T,
+    Eigen::Vector3d &velocity_delta, Eigen::Vector3d &linear_acc_mid) {
+  if (index_curr <= index_prev || imu_data_buff_.size() <= index_curr) {
+    return false;
+  }
+
+  const IMUData &imu_data_curr = imu_data_buff_.at(index_curr);
+  const IMUData &imu_data_prev = imu_data_buff_.at(index_prev);
+
+  T = imu_data_curr.time - imu_data_prev.time;
+
+  Eigen::Vector3d linear_acc_curr = Eigen::Vector3d(
+      imu_data_curr.linear_acceleration.x, imu_data_curr.linear_acceleration.y,
+      imu_data_curr.linear_acceleration.z);
+  Eigen::Vector3d  a_curr = GetUnbiasedLinearAcc(linear_acc_curr, R_curr);        //  w系下的a_curr
+  Eigen::Vector3d linear_acc_prev = Eigen::Vector3d(
+      imu_data_prev.linear_acceleration.x, imu_data_prev.linear_acceleration.y,
+      imu_data_prev.linear_acceleration.z);
+  Eigen::Vector3d  a_prev = GetUnbiasedLinearAcc(linear_acc_prev, R_prev);        //  w系下的a_prev
+  // mid-value acc can improve error state prediction accuracy:
+  linear_acc_mid = 0.5 * (a_curr + a_prev);     //  w 系下的linear_acc_mid , 用于更新pos_w 和 vel_w
+  velocity_delta = T * linear_acc_mid;
+
+  linear_acc_mid = 0.5 * (linear_acc_curr + linear_acc_prev) - accl_bias_;      //  b 系下的linear_acc_mid
+
+  return true;
+}
 ```
 
 这里有个之前一直忽略的点，在此mark下笔记：

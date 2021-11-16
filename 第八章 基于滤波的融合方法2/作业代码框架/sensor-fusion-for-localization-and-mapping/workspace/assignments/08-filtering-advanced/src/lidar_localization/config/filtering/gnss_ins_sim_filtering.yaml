@@ -1,0 +1,37 @@
+# select fusion method for IMU-GNSS-Odo-Mag, available methods are:
+#     1. error_state_kalman_filter
+fusion_method: error_state_kalman_filter
+# select fusion strategy for IMU-GNSS-Odo-Mag, available methods are:
+#     1. position_velocity
+fusion_strategy: position_velocity
+
+## 1. Error-State Kalman filter for IMU-GNSS-Odo fusion:
+error_state_kalman_filter:
+    earth:
+        # gravity can be calculated from https://www.sensorsone.com/local-gravity-calculator/ using latitude and height:
+        gravity_magnitude: 9.80943
+        # rotation speed, rad/s:
+        rotation_speed: 7.292115e-5
+        # latitude:
+        latitude:   48.9827703173
+    covariance:
+        prior:
+            pos: 1.0e-6
+            vel: 1.0e-6
+            ori: 1.0e-6
+            epsilon: 1.0e-6
+            delta: 1.0e-6
+        process:
+            gyro: 1.0e-4
+            accel: 2.5e-3
+            bias_accel: 2.5e-3
+            bias_gyro: 1.0e-4
+        measurement:
+            pose:
+                pos: 1.0e-4
+                ori: 1.0e-4
+            pos: 1.0e-4
+            vel: 2.5e-3
+    motion_constraint: 
+        activated: true
+        w_b_thresh: 0.13

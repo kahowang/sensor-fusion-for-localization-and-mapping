@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/kaho/shenlan_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/kaho/shenlan_ws/src/lidar_localization/include/**",
+                "/usr/include/**",
+                "${workspaceFolder}/build/include"
+            ],
+            "name": "ROS"
+        }
+    ],
+    "version": 4
+}

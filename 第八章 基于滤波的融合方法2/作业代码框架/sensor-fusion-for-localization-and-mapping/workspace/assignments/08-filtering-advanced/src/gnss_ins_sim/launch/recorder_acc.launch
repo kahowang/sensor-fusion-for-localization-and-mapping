@@ -1,0 +1,8 @@
+<launch>
+    <node name="gnss_ins_sim_recorder_node" pkg="gnss_ins_sim" type="recorder_node.py">
+        <!-- load default params -->
+        <rosparam command="load" file="$(find gnss_ins_sim)/config/recorder_acc.yaml" />
+
+        <!-- configuration -->
+    </node>
+</launch>
