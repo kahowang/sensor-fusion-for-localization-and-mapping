@@ -1,8 +1,8 @@
 # 多传感器融合定位 第八章 基于滤波的融合方法进阶
 
-参考博客：[深蓝学院-多传感器融合定位-第7章作业](https://blog.csdn.net/weixin_42113967/article/details/115052948)
+参考博客：[深蓝学院-多传感器融合定位-第8章作业](https://blog.csdn.net/weixin_42113967/article/details/115052948)
 
-代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%BA%94%E7%AB%A0%20%E6%83%AF%E6%80%A7%E5%AF%BC%E8%88%AA%E5%8E%9F%E7%90%86%E5%8F%8A%E8%AF%AF%E5%B7%AE%E5%88%86%E6%9E%90/imu_tk](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B8%83%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%95/lidar_localization)
+代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E5%85%AB%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%952](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E5%85%AB%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E8%9E%8D%E5%90%88%E6%96%B9%E6%B3%952)
 
 ## ![2021-10-09 18-43-09 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-09%2018-43-09%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)1.环境配置
 
