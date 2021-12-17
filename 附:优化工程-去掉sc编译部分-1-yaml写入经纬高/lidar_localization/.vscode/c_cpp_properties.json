@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/kaho/catkin_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/kaho/catkin_ws/src/lidar_localization/include/**",
+                "/home/kaho/catkin_ws/build/lidar_localization/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
