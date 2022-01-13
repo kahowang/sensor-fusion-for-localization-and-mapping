@@ -1,8 +1,0 @@
-prefix=/home/x/catkin_ws/src/lidar_localization/build/devel
-
-Name: lidar_localization
-Description: Description of lidar_localization
-Version: 1.0.0
-Cflags: -I/home/x/catkin_ws/src/lidar_localization/build/devel/include
-Libs: -L${prefix}/lib 
-Requires: 

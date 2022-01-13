@@ -26,7 +26,7 @@ cd build
 cmake ..
 make -j4
 //安装
-$ sudo make install
+sudo make install
 sudo ldconfig
 ```
 

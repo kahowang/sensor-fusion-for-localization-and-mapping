@@ -340,7 +340,7 @@ Eigen::Matrix<double,3,3> skew(Eigen::Matrix<double,3,1>& mat_in){              
 
 ###### 使用ceres自带的四元数更新参数块 
 
-通过观察自动求导的源码，可以发现，在自定求导中，使用了ceres的一个自定义四元数参数块
+通过观察自动求导的源码，可以发现，在自动求导中，使用了ceres的一个自定义四元数参数块
 
 FILE:  lidar_localization/src/models/loam/aloam_registration.cpp
 
@@ -369,7 +369,49 @@ FILE:   lidar_localization/include/lidar_localization/models/loam/aloam_analytic
 这里需要注意的是自定义时，输入的 q :四元数 4维 ， 更新以 so3的形式更新 3 维 ， 所以GlobalSize：4  LocalSize：3  具体体现在  ComputeJacobian()  函数中
 
 ```cpp
-//  自定义旋转残差块//参考博客   https://blog.csdn.net/jdy_lyy/article/details/119360492class PoseSO3Parameterization  :   public  ceres::LocalParameterization {                               //  自定义so3  旋转块 public:               PoseSO3Parameterization()  { }        virtual ~PoseSO3Parameterization() { }          virtual bool Plus(const double* x,                        const double* delta,                        double* x_plus_delta) const          //参数正切空间上的更新函数                {                         Eigen::Map<const  Eigen::Quaterniond>   quater(x);       //   待更新的四元数                        Eigen::Map<const  Eigen::Vector3d>     delta_so3(delta);     //    delta 值,使用流形 so3 更新                        Eigen::Quaterniond  delta_quater  =   Sophus::SO3d::exp(delta_so3).unit_quaternion();     //   so3 转换位 delta_p  四元数                                                Eigen::Map<Eigen::Quaterniond>  quter_plus(x_plus_delta);    //   更新后的四元数                        // 旋转更新公式                        quter_plus =  (delta_quater*quater).normalized();                                return  true;                }        virtual bool ComputeJacobian(const double* x, double* jacobian) const  //  四元数对so3的偏导数        {                Eigen::Map<Eigen::Matrix<double, 4, 3, Eigen::RowMajor>> j(jacobian);                (j.topRows(3)).setIdentity();                (j.bottomRows(1)).setZero();                return true;        }        // virtual bool MultiplyByJacobian(const double* x,        //                                 const int num_rows,        //                                 const double* global_matrix,        //                                 double* local_matrix) const;//一般不用        virtual int GlobalSize() const  {return  4;} // 参数的实际维数        virtual int LocalSize() const   {return  3;} // 正切空间上的参数维数};
+//  自定义旋转残差块
+//参考博客   https://blog.csdn.net/jdy_lyy/article/details/119360492
+class PoseSO3Parameterization  :   public  ceres::LocalParameterization {                               //  自定义so3  旋转块
+ public:       
+        PoseSO3Parameterization()  { }
+
+        virtual ~PoseSO3Parameterization() { }
+  
+        virtual bool Plus(const double* x,
+                        const double* delta,
+                        double* x_plus_delta) const          //参数正切空间上的更新函数
+                { 
+                        Eigen::Map<const  Eigen::Quaterniond>   quater(x);       //   待更新的四元数
+                        Eigen::Map<const  Eigen::Vector3d>     delta_so3(delta);     //    delta 值,使用流形 so3 更新
+
+                        Eigen::Quaterniond  delta_quater  =   Sophus::SO3d::exp(delta_so3).unit_quaternion();     //   so3 转换位 delta_p  四元数
+                        
+                        Eigen::Map<Eigen::Quaterniond>  quter_plus(x_plus_delta);    //   更新后的四元数
+
+                        // 旋转更新公式
+                        quter_plus =  (delta_quater*quater).normalized();        
+
+                        return  true;
+                }
+
+        virtual bool ComputeJacobian(const double* x, double* jacobian) const  //  四元数对so3的偏导数
+        {
+                Eigen::Map<Eigen::Matrix<double, 4, 3, Eigen::RowMajor>> j(jacobian);
+                (j.topRows(3)).setIdentity();
+                (j.bottomRows(1)).setZero();
+
+                return true;
+        }
+
+        // virtual bool MultiplyByJacobian(const double* x,
+        //                                 const int num_rows,
+        //                                 const double* global_matrix,
+        //                                 double* local_matrix) const;//一般不用
+
+        virtual int GlobalSize() const  {return  4;} // 参数的实际维数
+        virtual int LocalSize() const   {return  3;} // 正切空间上的参数维数
+};
+
 ```
 
 ## 调用
@@ -389,13 +431,86 @@ FILE: lidar_localization/src/models/loam/aloam_registration.cpp
 点线匹配
 
 ```cpp
-bool CeresALOAMRegistration::AddEdgeFactor(    const Eigen::Vector3d &source,    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y,    const double &ratio) {    /*自动求导*/  #ifdef  autograde    ceres::CostFunction *factor_edge = LidarEdgeFactor::Create(                  //   创建误差项        source,         target_x, target_y,         ratio    );    problem_.AddResidualBlock(        factor_edge,                                    //   约束边   cost_function        config_.loss_function_ptr,        //   鲁棒核函数  lost_function        param_.q, param_.t                      //  关联参数    );    #else   /*解析求导*/   ceres::CostFunction *factor_analytic_edge =   new EdgeAnalyticCostFunction(        source,         target_x, target_y,         ratio   );    problem_.AddResidualBlock(        factor_analytic_edge,                                    //   约束边   cost_function        config_.loss_function_ptr,        //   鲁棒核函数  lost_function        param_.q, param_.t                      //  关联参数    );#endif    return true;}
+bool CeresALOAMRegistration::AddEdgeFactor(
+    const Eigen::Vector3d &source,
+    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y,
+    const double &ratio
+) {
+
+    /*自动求导*/
+  #ifdef  autograde
+    ceres::CostFunction *factor_edge = LidarEdgeFactor::Create(                  //   创建误差项
+        source, 
+        target_x, target_y, 
+        ratio
+    );
+
+    problem_.AddResidualBlock(
+        factor_edge,                                    //   约束边   cost_function
+        config_.loss_function_ptr,        //   鲁棒核函数  lost_function
+        param_.q, param_.t                      //  关联参数
+    );
+
+    #else
+   /*解析求导*/
+   ceres::CostFunction *factor_analytic_edge =   new EdgeAnalyticCostFunction(
+        source, 
+        target_x, target_y, 
+        ratio
+   );
+
+    problem_.AddResidualBlock(
+        factor_analytic_edge,                                    //   约束边   cost_function
+        config_.loss_function_ptr,        //   鲁棒核函数  lost_function
+        param_.q, param_.t                      //  关联参数
+    );
+
+#endif
+    return true;
+}
 ```
 
 点面匹配
 
 ```cpp
-bool CeresALOAMRegistration::AddPlaneFactor(    const Eigen::Vector3d &source,    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y, const Eigen::Vector3d &target_z,    const double &ratio) {    /*自动求导*/    #ifdef  autograde    ceres::CostFunction *factor_plane = LidarPlaneFactor::Create(        source,         target_x, target_y, target_z,         ratio    );    problem_.AddResidualBlock(        factor_plane,        config_.loss_function_ptr,         param_.q, param_.t    );#else   /*解析求导*/    ceres::CostFunction *factor_analytic_plane =new PlaneAnalyticCostFunction(        source,         target_x, target_y, target_z,         ratio    );    problem_.AddResidualBlock(        factor_analytic_plane,        config_.loss_function_ptr,         param_.q, param_.t    );#endif    return true;}
+bool CeresALOAMRegistration::AddPlaneFactor(
+    const Eigen::Vector3d &source,
+    const Eigen::Vector3d &target_x, const Eigen::Vector3d &target_y, const Eigen::Vector3d &target_z,
+    const double &ratio
+) {
+
+    /*自动求导*/
+    #ifdef  autograde
+    ceres::CostFunction *factor_plane = LidarPlaneFactor::Create(
+        source, 
+        target_x, target_y, target_z, 
+        ratio
+    );
+
+    problem_.AddResidualBlock(
+        factor_plane,
+        config_.loss_function_ptr, 
+        param_.q, param_.t
+    );
+
+#else
+   /*解析求导*/
+    ceres::CostFunction *factor_analytic_plane =new PlaneAnalyticCostFunction(
+        source, 
+        target_x, target_y, target_z, 
+        ratio
+    );
+
+    problem_.AddResidualBlock(
+        factor_analytic_plane,
+        config_.loss_function_ptr, 
+        param_.q, param_.t
+    );
+
+#endif
+
+    return true;
+}
 ```
 
 
@@ -409,7 +524,11 @@ bool CeresALOAMRegistration::AddPlaneFactor(    const Eigen::Vector3d &source,  
 ```
 
 ```cpp
-#ifdef  maunual_block_loder	config_.q_parameterization_ptr =  new  PoseSO3Parameterization() ;                    //  自定义旋转参数块#else 	config_.q_parameterization_ptr = new ceres::EigenQuaternionParameterization();          //   SE3 转换矩阵/位姿参数化，#endif
+#ifdef  maunual_block_loder
+	config_.q_parameterization_ptr =  new  PoseSO3Parameterization() ;                    //  自定义旋转参数块
+#else 
+	config_.q_parameterization_ptr = new ceres::EigenQuaternionParameterization();          //   SE3 转换矩阵/位姿参数化，
+#endif
 ```
 
 ## evo 评价
