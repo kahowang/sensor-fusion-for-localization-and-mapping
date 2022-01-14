@@ -165,9 +165,10 @@ class CERES_EXPORT QuaternionParameterization : public LocalParameterization {
 
 ​	表示参数 x x*x* 的自由度（可能有冗余），比如四元数的自由度是4，旋转矩阵so3的自由度是3
 
-#### 2.LocalSize()
+##### 2.LocalSize()
 
 ​	表示 Δx 所在的正切空间（tangent space）的自由度，那么这个自由度是多少呢？下面进行解释，
+
 正切空间是流形（manifold）中概念，对流形感兴趣的可以参考[2]，参考论文[3]，我们可以这么理解manifold：
 
 ```bash
@@ -176,17 +177,17 @@ A manifold is a mathematical space that is not necessarily Euclidean on a global
 
 ​	上面的意思是说，SO3 空间是属于非欧式空间的，但是没关系，我们只要保证旋转的局部是欧式空间，就可以使用流形进行优化了. 比如用四元数表示的3D旋转是属于非欧式空间的，那么我们取四元数的向量部分作为优化过程中的微小增量（因为是小量，所以不存在奇异性）. 为什么使用四元数的向量部分？这部分可以参考[4]或者之前写的关于四元数的博客. 这样一来，向量部分就位于欧式空间了，也就得到了正切空间自由度是3.
 
-#### 3.Plus()
+##### 3.Plus()
 
 ​	自定义优化变量更新函数
 
-#### 4.ComputeJacobian()
+##### 4.ComputeJacobian()
 
 个人理解，是 定义待更新变量 和  待更新变量的delta 的雅克比
 
 ![ComputeJacobian](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ComputeJacobian.png)
 
-#### 5.Problem::AddParameterBlock()
+##### 5.Problem::AddParameterBlock()
 
 自定义参数块后，需要通过   Problem::AddParameterBlock   自定义参数快加载
 
@@ -213,7 +214,7 @@ FILE:   lidar_localization/include/lidar_localization/models/loam/aloam_analytic
 ##### 解析求导-点线匹配 CostFunction
 
 ```cpp
-class  EdgeAnalyticCostFunction   :  public   ceres::SizedCostFunction<3, 4,  3> {             // 优化参数维度：3     输入维度 ： q : 4   t : 3
+class  EdgeAnalyticCostFunction   :  public   ceres::SizedCostFunction<1, 4,  3> {             // 优化参数维度：1     输入维度 ： q : 4   t : 3
 public:
         double s;
         Eigen::Vector3d curr_point, last_point_a, last_point_b;
@@ -245,6 +246,7 @@ virtual  bool  Evaluate(double  const  *const  *parameters,
                 {
                         Eigen::Vector3d  re = last_point_b  -   last_point_a;
                         Eigen::Matrix3d  skew_re  =   skew(re);
+                        Eigen::Matrix3d  skew_de  =   skew(de);
 
                         //  J_so3_Rotation
                         Eigen::Matrix3d   skew_lp_r  =  skew(lp_r);
@@ -252,14 +254,14 @@ virtual  bool  Evaluate(double  const  *const  *parameters,
                         dp_by_dr.block<3,3>(0,0)  =  -skew_lp_r;
                         Eigen::Map<Eigen::Matrix<double, 1, 4, Eigen::RowMajor>> J_so3_r(jacobians[0]);
                         J_so3_r.setZero();
-                        J_so3_r.block<1,3>(0,0)  =  nu.transpose()  *  dp_by_dr /  de.norm();
-
+                        J_so3_r.block<1,3>(0,0)  =   nu.transpose()* skew_de * dp_by_dr / (de.norm()*nu.norm());
+       
                         //  J_so3_Translation
                         Eigen::Matrix3d  dp_by_dt;
                         (dp_by_dt.block<3,3>(0,0)).setIdentity();
                         Eigen::Map<Eigen::Matrix<double,  1,  3,  Eigen::RowMajor>> J_so3_t(jacobians[1]);
                         J_so3_t.setZero();
-                        J_so3_t.block<1,3>(0,0)  =   nu.transpose()  *  dp_by_dt /  de.norm();
+                        J_so3_t.block<1,3>(0,0)  =   nu.transpose()  *  skew_de / (de.norm()*nu.norm());
                 }
         }
         return  true;
@@ -338,7 +340,7 @@ Eigen::Matrix<double,3,3> skew(Eigen::Matrix<double,3,1>& mat_in){              
 
 #### 定义旋转参数块
 
-###### 使用ceres自带的四元数更新参数块 
+##### 使用ceres自带的四元数更新参数块 
 
 通过观察自动求导的源码，可以发现，在自动求导中，使用了ceres的一个自定义四元数参数块
 
@@ -356,7 +358,7 @@ FILE:  lidar_localization/src/models/loam/aloam_registration.cpp
 problem_.AddParameterBlock(param_.q, 4, config_.q_parameterization_ptr);            //  加载自定义旋转参数块
 ```
 
-###### 自己定义四元数更新参数块
+##### 自己定义四元数更新参数块
 
 FILE:   lidar_localization/include/lidar_localization/models/loam/aloam_analytic_factor.hpp
 
@@ -533,75 +535,139 @@ bool CeresALOAMRegistration::AddPlaneFactor(
 
 ## evo 评价
 
-### 自动求导
+### 自动求导 + Ceres 自带四元数参数块
 
-![autograde_ceres_kitti](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_kitti.png)
+```shell
+whole mapping time 179.438701 ms +++++
+```
 
-![autograde_ceres_kitti2](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_kitti2.png)
-
-#### evo_rpe
-
-![autograde_ceres_evo_rpe_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_rpe_1.png)
-
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_rpe_2.png" alt="autograde_ceres_evo_rpe_2" style="zoom:67%;" />
-
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_rpe_3.png" alt="autograde_ceres_evo_rpe_3" style="zoom:67%;" />
-
-#### evo_ape
-
-![autograde_ceres_evo_ape_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_ape_1.png)
-
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_ape_2.png" alt="autograde_ceres_evo_ape_2" style="zoom:67%;" />
-
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12autograde_ceres_evo_ape_3.png" alt="autograde_ceres_evo_ape_3" style="zoom:67%;" />
-
-### 解析求导
-
-![analystics_ceres_kitti](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_kitti.png)
-
-![analystics_ceres_kitti2](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_kitti2.png)
-
-![analystics_ceres_kitti3](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_kitti3.png)
+<p align ="center"><img src="/home/lory/Pictures/2022-01-14 23-02-36 的屏幕截图.png" alt="2022-01-14 23-02-36 的屏幕截图" width = 40%  height =40%;" /></p>
 
 #### evo_rpe
 
-![analystics_ceres_evo_rpe_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_rpe_1.png)
+```shell
+evo_rpe kitti ground_truth.txt laser_odom.txt -r trans_part --delta 100 --plot --plot_mode xyz
+       max	32.674307
+      mean	1.727705
+    median	0.949400
+       min	0.174067
+      rmse	4.633799
+       sse	3134.926234
+       std	4.299667
+```
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_rpe_2.png" alt="analystics_ceres_evo_rpe_2" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2023-05-44%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 23-05-44 的屏幕截图" width = 40%  height =40%;" /></p>
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_rpe_3.png" alt="analystics_ceres_evo_rpe_3" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2023-05-54%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 23-05-54 的屏幕截图" width = 40%  height =40%;" /></p>
 
 #### evo_ape
 
-![analystics_ceres_evo_ape_1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_ape_1.png)
+```shell
+ evo_ape kitti ground_truth.txt laser_odom.txt -r full --plot --plot_mode xyz
+        max	49.216907
+      mean	17.845561
+    median	15.060993
+       min	0.000000
+      rmse	21.164576
+       sse	6550216.305710
+       std	11.378720
+```
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_ape_2.png" alt="analystics_ceres_evo_ape_2" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2023-09-28%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 23-09-28 的屏幕截图" width = 40%  height =40%;" /></pp>
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12analystics_ceres_evo_ape_3.png" alt="analystics_ceres_evo_ape_3" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2023-09-39%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 23-09-39 的屏幕截图" width = 40%  height =40%;" /></p>
 
-### 解析求导+自定义参数块
+### 解析求导 + Ceres 自带四元数参数块
 
-![kitti1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12kitti1.png)
+```shell
+whole mapping time 174.593543 ms +++++
+```
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12kitti2.png" alt="kitti2" style="zoom: 67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-27-06%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-27-06 的屏幕截图"  width = 40%  height =40%;" /></p>
 
 #### evo_rpe
 
-![rpe1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12rpe1.png)
+```shell
+evo_rpe kitti ground_truth.txt laser_odom.txt -r trans_part --delta 100 --plot --plot_mode xyz
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12rpe2.png" alt="rpe2" style="zoom:67%;" />
+       max	32.674307
+      mean	1.752770
+    median	1.073263
+       min	0.174067
+      rmse	4.309392
+       sse	1207.105821
+       std	3.936833
+```
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12rpe3.png" alt="rpe3" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-15-35%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-15-35 的屏幕截图"  width = 40%  height =40%;" />
+
+
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-16-38%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-16-38 的屏幕截图"  width = 40%  height =40%;" /></p>
 
 #### evo_ape
 
-![ape1](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape1.png)
+```shell
+ evo_ape kitti ground_truth.txt laser_odom.txt -r full --plot --plot_mode xyz
+       max	49.216907
+      mean	17.908280
+    median	15.086003
+       min	0.000000
+      rmse	21.509767
+       sse	3021235.643653
+       std	11.914847
+```
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape2.png" alt="ape2" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-22-40%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-22-40 的屏幕截图"  width = 40%  height =40%;" /></p>
 
-<img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A12ape3.png" alt="ape3" style="zoom:67%;" />
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-23-54%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-23-54 的屏幕截图" width = 40%  height =40%;" /></p>
 
-​																																													edit   by   kaho  2021.8.31
+### 解析求导  + 自定义参数块
+
+```shell
+whole mapping time 170.378546 ms +++++
+```
+
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-40-50%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-40-50 的屏幕截图" width = 40%  height =40%;" /></p>
+
+#### evo_rpe
+
+```shell
+    evo_rpe kitti ground_truth.txt laser_odom.txt -r trans_part --delta 100 --plot --plot_mode xyz
+    max	32.674307
+      mean	1.727784
+    median	1.003377
+       min	0.174067
+      rmse	4.634043
+       sse	2254.806880
+       std	4.299897
+```
+
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-42-47%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-42-47 的屏幕截图" width = 40%  height =40%;" /></p>
+
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-42-56%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-42-56 的屏幕截图"  width = 40%  height =40%;" /></p>
+
+#### evo_ape
+
+```shell
+      evo_ape kitti ground_truth.txt laser_odom.txt -r full --plot --plot_mode xyz
+      max	49.216907
+      mean	17.860616
+    median	15.072742
+       min	0.000000
+      rmse	21.251952
+       sse	4769827.822403
+       std	11.517112
+```
+
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-46-11%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-46-11 的屏幕截图" width = 40%  height =40%;" /></p>
+
+<p align ="center"><img src="https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112022-01-14%2020-46-26%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png" alt="2022-01-14 20-46-26 的屏幕截图"width = 40%  height =40%;" /></p>
+
+### 总结：
+
+​       图中结果可以看出，缺乏回环矫正的情况下在拐弯的情况下由于实现流程和缺乏回环导致误差会偏大，解析求求导和自动求导的结果相似。总体来看轨迹的趋势还是正确的，算法应该没有问题，但是参数调整还有改进的余地。
+
+​																																													                                                                                                              edit   by   kaho  2021.8.31
 
 
 

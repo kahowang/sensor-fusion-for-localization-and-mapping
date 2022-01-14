@@ -19,7 +19,7 @@ Eigen::Matrix<double,3,3> skew(Eigen::Matrix<double,3,1>& mat_in){              
     return skew_mat;
 }
  
-class  EdgeAnalyticCostFunction   :  public   ceres::SizedCostFunction<3, 4,  3> {             // 优化参数维度：3     输入维度 ： q : 4   t : 3
+class  EdgeAnalyticCostFunction   :  public   ceres::SizedCostFunction<1, 4,  3> {             // 优化参数维度：1     输入维度 ： q : 4   t : 3
 public:
         double s;
         Eigen::Vector3d curr_point, last_point_a, last_point_b;
@@ -58,14 +58,15 @@ virtual  bool  Evaluate(double  const  *const  *parameters,
                         dp_by_dr.block<3,3>(0,0)  =  -skew_lp_r;
                         Eigen::Map<Eigen::Matrix<double, 1, 4, Eigen::RowMajor>> J_so3_r(jacobians[0]);
                         J_so3_r.setZero();
-                        J_so3_r.block<1,3>(0,0)  =  nu.transpose()  *  dp_by_dr /  de.norm();
+                        J_so3_r.block<1,3>(0,0)  =   nu.transpose()* skew_de * dp_by_dr / (de.norm()*nu.norm());
+       
 
                         //  J_so3_Translation
                         Eigen::Matrix3d  dp_by_dt;
                         (dp_by_dt.block<3,3>(0,0)).setIdentity();
                         Eigen::Map<Eigen::Matrix<double,  1,  3,  Eigen::RowMajor>> J_so3_t(jacobians[1]);
                         J_so3_t.setZero();
-                        J_so3_t.block<1,3>(0,0)  =   nu.transpose()  *  dp_by_dt /  de.norm();
+                        J_so3_t.block<1,3>(0,0)  =   nu.transpose()  *  skew_de / (de.norm()*nu.norm());
                 }
         }
         return  true;
