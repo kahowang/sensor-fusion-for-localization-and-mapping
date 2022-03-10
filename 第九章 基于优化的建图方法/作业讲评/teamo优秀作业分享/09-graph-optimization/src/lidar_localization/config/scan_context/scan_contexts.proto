@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package scan_context_io;
+
+message ScanContext {
+    repeated float data = 1;
+}
+
+message ScanContexts {
+    required int32 num_rings = 1;
+    required int32 num_sectors = 2;
+    
+    repeated ScanContext data = 3;
+}

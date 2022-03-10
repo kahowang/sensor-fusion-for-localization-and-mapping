@@ -1,0 +1,8 @@
+prefix=/home/lory/shenlan_ws/install
+
+Name: lidar_localization
+Description: Description of lidar_localization
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: 

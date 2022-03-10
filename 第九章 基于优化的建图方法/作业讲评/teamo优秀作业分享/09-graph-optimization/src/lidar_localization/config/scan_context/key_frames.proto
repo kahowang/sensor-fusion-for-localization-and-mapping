@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+package scan_context_io;
+
+message Trans {
+    required float x = 1;
+    required float y = 2;
+    required float z = 3;
+}
+
+message Quat {
+    required float w = 1;
+    required float x = 2;
+    required float y = 3;
+    required float z = 4;
+}
+
+message KeyFrame {
+    required Quat q = 1;
+    required Trans t = 2;
+}
+
+message KeyFrames {
+    repeated KeyFrame data = 1;
+}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<!-- saved from url=(0032)https://c.runoob.com/compile/12/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+   	<title>C++ 在线工具 | 菜鸟工具</title>
+	<meta name="robots" content="max-image-preview:large">
+<link rel="stylesheet" id="wpProQuiz_front_style-css" href="./C++ 在线工具 _ 菜鸟工具_files/wpProQuiz_front.min.css" type="text/css" media="all">
+<link rel="canonical" href="https://c.runoob.com/compile/12/">
+<meta name="keywords" content="C++ 在线工具">
+<meta name="description" content="在编辑器上输入简单的 C++ 代码，可在线编译运行。..">
+   
+			<script src="./C++ 在线工具 _ 菜鸟工具_files/hm.js"></script><script src="./C++ 在线工具 _ 菜鸟工具_files/codemirror.min.js"></script>
+		<script src="./C++ 在线工具 _ 菜鸟工具_files/simple.min.js"></script>
+		<link rel="stylesheet" href="./C++ 在线工具 _ 菜鸟工具_files/codemirror.min.css">
+				
+		<script src="./C++ 在线工具 _ 菜鸟工具_files/clike.js"></script>
+				<link href="./C++ 在线工具 _ 菜鸟工具_files/normalize.min.css" rel="stylesheet">
+		
+    <!-- Bootstrap Core CSS -->
+    <link href="./C++ 在线工具 _ 菜鸟工具_files/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="./C++ 在线工具 _ 菜鸟工具_files/modern-business.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="./C++ 在线工具 _ 菜鸟工具_files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!--[if lt IE 9]>
+        <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+        <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- PHP 代码 -->
+    <link rel="stylesheet" href="./C++ 在线工具 _ 菜鸟工具_files/style.css"> 
+   
+
+	
+
+ <script src="./C++ 在线工具 _ 菜鸟工具_files/jquery.min.js"></script>
+
+<script src="./C++ 在线工具 _ 菜鸟工具_files/clipboard.min.js"></script>
+
+</head>
+
+<body>
+
+<style>
+.navbar-inverse .navbar-nav>.open>a, .navbar-inverse .navbar-nav>.open>a:focus, .navbar-inverse .navbar-nav>.open>a:hover {
+	background-color:#64854c;
+}
+</style>
+<nav class="navbar navbar-inverse navbar-static-top  runoob-header" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">菜单切换</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand runoob-title" href="https://c.runoob.com/">菜鸟工具</a>
+		</div>
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		   
+
+		<div>
+			<ul class="nav navbar-nav">
+				<li><a target="_blank" href="https://c.runoob.com/front-end/61">WEB 在线工具</a></li>
+				<li><a target="_blank" href="https://c.runoob.com/more/svgeditor/">SVG 编辑器</a></li>
+				<li><a target="_blank" href="https://c.runoob.com/more/gradients/#LemonLime">渐变色工具</a></li>
+				<li><a target="_blank" href="https://c.runoob.com/more/imageeditor/">图片编辑器</a></li>
+				<li><a target="_blank" href="https://www.runoob.com/">菜鸟教程</a></li>
+				<li class="dropdown">
+                <a href="https://c.runoob.com/compile/12/#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">中文 <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="https://enc.runoob.com/">English</a></li>
+                </ul>
+              </li>
+			</ul>
+		</div>
+		
+		     
+		
+		   
+		        <form class="navbar-form navbar-left" role="search" action="https://c.runoob.com/index.php" method="get">
+		        <div class="input-group">
+		             		            <input type="text" class="form-control" name="s" value="" placeholder="Search……">
+		            <div class="input-group-btn">
+		                <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+		            </div>
+		        </div>
+		        </form>
+				
+		    
+		
+		
+			
+			
+		 </div>
+		<!-- /.navbar-collapse -->
+	</div>
+        <!-- /.container -->
+</nav>
+<div class="container">
+
+	
+
+<style>
+.CodeMirror {
+	    height: 474px;
+}
+</style>
+<br>
+<div class="row">
+
+	<div class="col-md-12">
+		<div class="panel panel-default">
+					<div id="compiler" class="panel-heading">
+			<form class="form-inline" role="form">
+				 <button type="button" class="btn btn-success" id="submitBTN"><i class="fa fa-send-o"></i> 点击运行</button>
+				  <input type="text" class="form-control" name="stdin" id="stdin" placeholder="标准输入(stdin)">				<select class="form-control" id="sel1">
+				    <option value="https://c.runoob.com/compile/6208/">Groovy 在线工具</option><option value="https://c.runoob.com/compile/6206/">Assembly 在线工具</option><option value="https://c.runoob.com/compile/5649/">R 在线工具</option><option value="https://c.runoob.com/compile/5648/">VB.NET 在线工具</option><option value="https://c.runoob.com/compile/5577/">TypeScript 在线工具</option><option value="https://c.runoob.com/compile/2960/">Kotlin 在线工具</option><option value="https://c.runoob.com/compile/73/">Pascal 在线工具</option><option value="https://c.runoob.com/compile/66/">Lua 在线工具</option><option value="https://c.runoob.com/compile/22/">Node.js 在线工具</option><option value="https://c.runoob.com/compile/21/">Go 在线工具</option><option value="https://c.runoob.com/compile/20/">Swift 在线工具</option><option value="https://c.runoob.com/compile/19/">RUST 在线工具</option><option value="https://c.runoob.com/compile/18/">Bash 在线工具</option><option value="https://c.runoob.com/compile/17/">Perl 在线工具</option><option value="https://c.runoob.com/compile/16/">Erlang 在线工具</option><option value="https://c.runoob.com/compile/15/">Scala 在线工具</option><option value="https://c.runoob.com/compile/14/">C# 在线工具</option><option value="https://c.runoob.com/compile/13/">Ruby 在线工具</option><option selected="selected" value="https://c.runoob.com/compile/12/">C++ 在线工具</option><option value="https://c.runoob.com/compile/11/">C 在线工具</option><option value="https://c.runoob.com/compile/10/">Java 在线工具</option><option value="https://c.runoob.com/compile/9/">Python3 在线工具</option><option value="https://c.runoob.com/compile/6/">Python2 在线工具</option><option value="https://c.runoob.com/compile/1/">PHP 在线工具</option>			  	</select>
+			  	
+				 <label class="pull-right"><strong style="font-size: 16px"><a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&amp;email=ssbDyoOAgfLU3crf09venNHd3w" target="_blank"><i class="fa fa-envelope" aria-hidden="true"></i> 邮件反馈</a></strong></label>
+				 <button type="button" class="btn btn-warning copycode" id="copycode"><i class="fa fa-files-o" aria-hidden="true"></i> 复制</button>
+				 <button type="button" class="btn btn-default" id="clearCode"><i class="fa fa-eraser" aria-hidden="true"></i> 清空</button>
+			</form>
+			</div>
+			<div class="panel-body">
+			<form role="form" id="compiler-form">
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-md-7">
+                    <textarea class="form-control" id="code" name="code" rows="18" style="display: none;">#include &lt;iostream&gt;
+using namespace std;
+
+int main()
+{
+   cout &lt;&lt; "Hello World";
+   return 0;
+}</textarea><div class="CodeMirror cm-s-default CodeMirror-focused"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 95.9375px; left: 186.797px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-vscrollbar" tabindex="-1" cm-not-content="true"><div style="min-width: 1px; height: 0px;"></div></div><div class="CodeMirror-hscrollbar" tabindex="-1" cm-not-content="true"><div style="height: 100%; min-height: 1px; width: 0px;"></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 30px; margin-bottom: -15px; border-right-width: 15px; min-height: 172px; min-width: 217.766px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre class="prettyprint"><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors" style="visibility: hidden;"><div class="CodeMirror-cursor" style="left: 155.797px; top: 90.9375px; height: 18.1875px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation" style=""><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">1</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">#include &lt;iostream&gt;</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">2</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">using</span> <span class="cm-keyword">namespace</span> <span class="cm-def">std</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">3</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">4</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-type">int</span> <span class="cm-def">main</span>()</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">5</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">{</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">6</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">  <span class="cm-type">int</span> <span class="cm-variable">a</span> ,<span class="cm-variable">b</span>, <span class="cm-variable">c</span> <span class="cm-operator">=</span><span class="cm-number">0</span> ;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">7</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;">   <span class="cm-variable">cout</span> <span class="cm-operator">&lt;&lt;</span> <span class="cm-string">"Hello World"</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">8</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;">   <span class="cm-keyword">return</span> <span class="cm-number">0</span>;</span></pre></div><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -30px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 0px; width: 21px;">9</div></div><pre class="CodeMirror-line  prettyprint" role="presentation"><span role="presentation" style="padding-right: 0.1px;">}</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 15px; width: 1px; border-bottom: 0px solid transparent; top: 172px;"></div><div class="CodeMirror-gutters" style="height: 187px;"><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div>
+                  </div>
+                  <div class="col-md-5">
+                    <textarea placeholder="运行结果……" class="form-control" id="compiler-textarea-result" rows="23">Hello World!</textarea>
+                  </div>
+                </div>
+              </div>
+             
+             
+            </form>
+			</div>
+		</div>
+	</div>
+	<!--
+	<div class="col-md-12">
+	
+		<div id="about" class="panel panel-default">
+			<div class="panel-heading">概述</div>
+			<div class="panel-body">
+			内容
+			</div>
+        </div>
+        
+	    <div id="author" class="panel panel-default">
+			<div class="panel-body">
+              <p>该实例由 <a target="_blank" href="http://www.runoob.com/">菜鸟教程</a> 整理。</a></p>
+			</div>
+		</div>
+	</div>
+	-->
+</div>
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+	lineNumbers: true,
+	matchBrackets: true,
+	mode: "text/x-c++src",
+	indentUnit: 4,
+	indentWithTabs: true,
+});
+btn = $("#submitBTN");
+editor.on("change",function(editor,change){
+	
+	btn.prop('disabled', false);
+});
+
+btn.click(function() {
+	btn.prop('disabled', true);
+	loadingdata = '程序正在运行中……';
+	$("#compiler-textarea-result").val(loadingdata);
+  
+	code = editor.getValue();
+	stdin = '';
+	if ($('#stdin').length > 0) { 
+		stdin = $("#stdin").val();
+	}
+	token = '4381fe197827ec87cbac9552f14ec62a';
+	runcode = 7;
+	$.post("https://tool.runoob.com/compile2.php",{code:code,token:token,stdin:stdin,language:runcode, fileext:"cpp"},function(data){
+	    $("#compiler-textarea-result").val(data.output + data.errors);
+	});
+	setTimeout(function(){
+        btn.prop('disabled', false);
+    }, 10*1000);
+});
+$("#clearCode").click(function() {
+	var r=confirm("确认清空？");
+	if (r==true){
+		editor.setValue("");
+		editor.clearHistory();
+		$("#compiler-textarea-result").val("");
+		btn.prop('disabled', true);
+	}
+});
+
+$(function(){
+  // bind change event to select
+  $('#sel1').on('change', function () {
+      var url = $(this).val(); // get selected value
+      if (url) { // require a URL
+          window.location = url; // redirect
+      }
+      return false;
+  });
+  $(window).keydown(function(event){
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      return false;
+    }
+  });
+});
+new ClipboardJS('#copycode', {
+	text: function(trigger) {
+		return editor.getDoc().getValue();
+	}
+}).on('success', function(e) {
+   $("#copycode").html('已复制');
+   setTimeout(function(){ $("#copycode").html("<i class=\"fa fa-files-o\" aria-hidden=\"true\"></i> 复制"); }, 2000);
+   e.clearSelection();
+}).on('error', function(e) {
+    alert('Error!');
+});
+</script>
+
+ <div class="col-md-12 text-center">
+<script async="" src="./C++ 在线工具 _ 菜鸟工具_files/f.txt"></script>
+<!-- 移动版 自动调整 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5751451760833794" data-ad-slot="1691338467" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+</div>
+
+</div>
+<br>
+<hr>
+<!-- Footer -->
+
+
+<footer style="margin:0;padding: 3rem 0;background: #f4f5f7;">
+<div class="container">
+	
+	<div class="row align-items-center justify-content-md-between">
+		<div class="col-md-12">
+			<div class="copyright">
+			Copyright © <a href="https://www.runoob.com/">菜鸟教程</a> 2022 备案号：<a target="_blank" rel="nofollow" href="https://beian.miit.gov.cn/">闽ICP备15012807号-1</a>
+			</div>
+		</div>
+	
+	</div>
+</div>
+</footer>
+
+
+
+
+<script>
+$(function() {
+	//代码高亮
+	//console.log(12);
+	if(12 != 6230) {
+	$('pre').each(function() {
+		if(!$(this).hasClass("prettyprint")) {
+			$(this).addClass("prettyprint");
+		}
+	});
+	}
+})
+</script>
+<div style="display:none;">
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async="" src="./C++ 在线工具 _ 菜鸟工具_files/js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YXYBJQFFYD');
+</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?68c6d4f0f6c20c5974b17198fa6fd40a";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</div>
+
+<script src="./C++ 在线工具 _ 菜鸟工具_files/bootstrap.min.js"></script>
+
+
+
+</body></html>

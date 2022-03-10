@@ -1,0 +1,45 @@
+data_path: ./   # 数据存放路径
+
+# 关键帧
+key_frame_distance: 2.0 # 关键帧距离
+
+# select backend optimizer, available optimizers are
+#     1. g2o
+graph_optimizer_type: g2o
+
+# config measurement used:
+# a. GNSS
+use_gnss: true
+# b. loop closure
+use_loop_close: true
+# c. IMU pre-integration
+use_imu_pre_integration: true
+# c. odo pre-integration
+use_odo_pre_integration: true
+
+optimization_step_size:
+    key_frame: 50       # optimize per key frames
+    loop_closure: 10    # optimize per loop closure detections
+
+g2o_param:
+    odom_edge_noise: [2.5e-1, 2.5e-1, 2.5e-1, 0.001, 0.001, 0.001] # 噪声：x y z yaw roll pitch
+    close_loop_noise: [2.5e-1, 2.5e-1, 2.5e-1, 0.001, 0.001, 0.001] # 噪声：x y z yaw roll pitch
+    gnss_noise: [1.0, 1.0, 4.0] # 噪声：x y z
+
+imu_pre_integration:
+    earth:
+        # gravity can be calculated from https://www.sensorsone.com/local-gravity-calculator/ using latitude and height:
+        gravity_magnitude: 9.80943
+    covariance:
+        measurement:
+            accel: 2.5e-3
+            gyro: 1.0e-4
+        random_walk:
+            accel: 1.0e-8
+            gyro: 1.0e-8
+
+odo_pre_integration:
+    covariance:
+        measurement:
+            v: 2.5e-3
+            w: 1.0e-2
