@@ -33,7 +33,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 VINS系列相关代码：滑动窗口部分
 
-邱笑晨博士的《预积分总结与公式推导》(发表于泡泡机器人公众号)
+[邱笑晨博士的《预积分总结与公式推导》(发表于泡泡机器人公众号)](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/blob/main/%E7%AC%AC%E5%8D%81%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E4%BC%98%E5%8C%96%E7%9A%84%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95/%E4%BD%9C%E4%B8%9A%E8%AE%B2%E8%AF%84/%E9%A2%84%E7%A7%AF%E5%88%86%E6%80%BB%E7%BB%93%E4%B8%8E%E5%85%AC%E5%BC%8F%E6%8E%A8%E5%AF%BC20180729.pdf)
 
 机器人状态估计：理论推导部分
 
@@ -41,7 +41,7 @@ VINS系列相关代码：滑动窗口部分
 
 **[多传感器融合定位理论基础（十二）：滑动窗口原理及应用](https://zhuanlan.zhihu.com/p/150367249) (重点参考)**
 
-以下代码补充的公式摘自GeYao助教的手推公式，图表摘自任乾老师课上的笔记，需要补全的代码主要有两大类：
+以下代码补充的公式摘自[GeYao助教的手推公式](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/blob/main/%E7%AC%AC%E5%8D%81%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E4%BC%98%E5%8C%96%E7%9A%84%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95/%E4%BD%9C%E4%B8%9A%E8%AE%B2%E8%AF%84/slidingwindow.pdf)，图表摘自任[乾老师课上的笔记](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/blob/main/%E7%AC%AC%E5%8D%81%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E4%BC%98%E5%8C%96%E7%9A%84%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95/%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D-%E7%AC%AC10%E8%AE%B2%20V1.pdf)，需要补全的代码主要有两大类：
 
 代码参考：1. [GEYAO助教的github](https://github.com/AlexGeControl/Sensor-Fusion/tree/master/workspace/assignments/07-sliding-window)   2.[张嘉皓助教的github](https://github.com/ChenJiahao031008/sensor-fusion-for-slam/tree/main/project/10-sliding-window)
 
