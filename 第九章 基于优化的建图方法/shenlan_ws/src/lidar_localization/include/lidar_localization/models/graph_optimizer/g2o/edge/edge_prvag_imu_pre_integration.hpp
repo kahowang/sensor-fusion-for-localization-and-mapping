@@ -44,13 +44,13 @@ public:
         g2o::VertexPRVAG* v0 = dynamic_cast<g2o::VertexPRVAG*>(_vertices[0]);
         g2o::VertexPRVAG* v1 = dynamic_cast<g2o::VertexPRVAG*>(_vertices[1]);
 
-		const Eigen::Vector3d &pos_i = v0->estimate().pos;					//   优化后 i 时刻的位置
+		const Eigen::Vector3d &pos_i = v0->estimate().pos;					//   i 时刻的估计位姿
 		const Sophus::SO3d    &ori_i = v0->estimate().ori;						
 		const Eigen::Vector3d &vel_i = v0->estimate().vel;
 		const Eigen::Vector3d &b_a_i = v0->estimate().b_a;
 		const Eigen::Vector3d &b_g_i = v0->estimate().b_g;
 
-		const Eigen::Vector3d &pos_j = v1->estimate().pos;					//  优化后 j 时刻的位置
+		const Eigen::Vector3d &pos_j = v1->estimate().pos;					// 	  j 时刻的估计位姿
 		const Sophus::SO3d    &ori_j = v1->estimate().ori;
 		const Eigen::Vector3d &vel_j = v1->estimate().vel;
 		const Eigen::Vector3d &b_a_j = v1->estimate().b_a;
@@ -68,7 +68,7 @@ public:
 		//
 		// TODO: compute error:
 		//
-		const Eigen::Vector3d &alpha_ij =  _measurement.block<3,  1>(INDEX_P,  0);			//   获取观测值
+		const Eigen::Vector3d &alpha_ij =  _measurement.block<3,  1>(INDEX_P,  0);			//   获取预积分更新的状态量
 		const Eigen::Vector3d &theta_ij  = _measurement.block<3,   1>(INDEX_R, 0);		
 		const Eigen::Vector3d &beta_ij  = _measurement.block<3, 1>(INDEX_V, 0);		
 		Eigen::Quaterniond q_ij = Eigen::Quaterniond(Sophus::SO3d::exp(theta_ij).matrix());
@@ -102,13 +102,13 @@ public:
 		const Eigen::Vector3d &d_b_g_i
 	) {
 		_measurement.block<3, 1>(INDEX_P, 0) += (
-			J_.block<3, 3>(INDEX_P, INDEX_A)*d_b_a_i + J_.block<3, 3>(INDEX_P, INDEX_G)*d_b_g_i
+			J_.block<3, 3>(INDEX_P, INDEX_A)*d_b_a_i + J_.block<3, 3>(INDEX_P, INDEX_G)*d_b_g_i		  	//  更新位置预积分
 		);
 		_measurement.block<3, 1>(INDEX_R, 0) = (
 			Sophus::SO3d::exp(_measurement.block<3, 1>(INDEX_R, 0)) * 
-			Sophus::SO3d::exp(J_.block<3, 3>(INDEX_R, INDEX_G)*d_b_g_i)
+			Sophus::SO3d::exp(J_.block<3, 3>(INDEX_R, INDEX_G)*d_b_g_i)		//  更新姿态预积分
 		).log();
-		_measurement.block<3, 1>(INDEX_V, 0) += (
+		_measurement.block<3, 1>(INDEX_V, 0) += (													//   更新速度预积分
 			J_.block<3, 3>(INDEX_V, INDEX_A)*d_b_a_i + J_.block<3, 3>(INDEX_V, INDEX_G)*d_b_g_i
 		);
 	}

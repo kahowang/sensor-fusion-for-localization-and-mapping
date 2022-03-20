@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="rviz"  type="rviz"  name="rviz"  args="-d $(find lidar_localization)/rviz/lio_localization.rviz"></node>
+    <node pkg="lidar_localization"  type="data_pretreat_node"  name="data_pretreat_node"  output="screen"></node>
+    <node pkg="lidar_localization"  type="lio_matching_node"  name="front_end_node"  output="screen"></node>
+    <node pkg="lidar_localization"  type="sliding_window_node"  name="back_end_node"  output="screen"></node>
+</launch>

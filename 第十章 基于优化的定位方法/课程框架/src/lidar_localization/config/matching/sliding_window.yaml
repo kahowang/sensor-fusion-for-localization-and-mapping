@@ -1,0 +1,49 @@
+#
+# data output path:
+#
+data_path: ./
+
+#
+# key frame detection
+#
+key_frame:
+    # max. distance between two key frames:
+    max_distance: 0.25
+    # max. time interval between two key frames:
+    max_interval: 0.10
+
+#
+# sliding window size:
+#
+sliding_window_size: 20
+
+#
+# select measurements:
+# 
+measurements:
+    map_matching: true
+    imu_pre_integration: true
+
+#
+# measurement configs:
+#
+lidar_odometry:
+    noise: [1.0, 1.0, 1.0, 0.01, 0.01, 0.01] # x y z yaw roll pitch
+
+map_matching:
+    noise: [1.0, 1.0, 4.0, 0.01, 0.01, 0.01] # x y z yaw roll pitch
+
+gnss_position:
+    noise: [1.0, 1.0, 4.0] # x y z
+
+imu_pre_integration:
+    earth:
+        # gravity can be calculated from https://www.sensorsone.com/local-gravity-calculator/ using latitude and height:
+        gravity_magnitude: 9.80943
+    covariance:
+        measurement:
+            accel: 2.5e-3
+            gyro: 1.0e-4
+        random_walk:
+            accel: 1.0e-4
+            gyro: 1.0e-4

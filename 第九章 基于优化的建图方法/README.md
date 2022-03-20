@@ -8,6 +8,8 @@ https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main
 
 [shenlan2_ws 为松鹏哥代码](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E4%B9%9D%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E4%BC%98%E5%8C%96%E7%9A%84%E5%BB%BA%E5%9B%BE%E6%96%B9%E6%B3%95/shenlan2_ws)
 
+native环境需要注意的是，g2o 版本需要进行更新，新的g2o版本已下载在shenlan_ws/third_party 中
+
 ## 1.IMU预积分 残差对部分变量的雅克比
 
 ### 预积分残差公式如下

@@ -1,0 +1,71 @@
+#
+# data storage:
+#
+# a. global map for relative pose estimation using lidar frontend:
+map_path: /workspace/assignments/09-sliding-window/src/lidar_localization/slam_data/map/filtered_map.pcd
+# b. scan context index for map matching:
+scan_context_path: /workspace/assignments/09-sliding-window/src/lidar_localization/config/scan_context   
+
+#
+# point cloud map & measurement processors
+# 
+# a. global map filter:
+global_map_filter: voxel_filter                                 # 选择滑窗地图点云滤波方法，目前支持：voxel_filter、no_filter
+
+# b.1. local map segmenter: 
+box_filter_size: [-150.0, 150.0, -150.0, 150.0, -150.0, 150.0]  # 参数顺序是min_x, max_x, min_y, max_y, min_z, max_z
+# b.2. local map filtering:
+local_map_filter: voxel_filter                                  # 选择滑窗地图点云滤波方法，目前支持：voxel_filter、no_filter
+
+# c. current frame filter
+frame_filter: voxel_filter                                      # 选择当前帧点云滤波方法，目前支持：voxel_filter、no_filter
+
+#
+# relative pose estimation using lidar frontend
+#
+registration_method: NDT                                        # 选择点云匹配方法，目前支持：NDT 
+
+#
+# map matching using scan context
+#
+map_matching_method: scan_context                               # available map matching methods: scan_context
+
+
+# 各配置选项对应参数
+## 滤波相关参数
+voxel_filter:
+    global_map:
+        leaf_size: [0.9, 0.9, 0.9]
+    local_map:
+        leaf_size: [0.5, 0.5, 0.5]
+    frame:
+        leaf_size: [1.5, 1.5, 1.5]
+
+## 匹配相关参数
+NDT:
+    res : 1.0
+    step_size : 0.1
+    trans_eps : 0.01
+    max_iter : 30
+
+## ScanContext params:
+scan_context:
+    # a. ROI definition:
+    max_radius: 80.0
+    max_theta: 360.0
+    # b. resolution:
+    num_rings: 20
+    num_sectors: 60
+    # c. ring key indexing interval:
+    indexing_interval: 1
+    # d. min. key frame sequence distance:
+    min_key_frame_seq_distance: 100
+    # e. num. of nearest-neighbor candidates to check:
+    num_candidates: 5
+    # f. sector key fast alignment search ratio:
+    #   avoid brute-force match using sector key
+    fast_alignment_search_ratio: 0.1
+    # g. scan context distance threshold for proposal generation:
+    #   0.4-0.6 is good choice for using with robust kernel (e.g., Cauchy, DCS) + icp fitness threshold 
+    #   if not, recommend 0.1-0.15
+    scan_context_distance_thresh: 0.15
