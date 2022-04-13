@@ -2,7 +2,7 @@
 
 本章是基于先验地图的图优化方法，先验地图的构建可参考[多传感器融合定位 第九章 基于优化的建图方法](https://blog.csdn.net/weixin_41281151/article/details/123406337)
 
-代码下载：
+代码下载：[https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E5%8D%81%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E4%BC%98%E5%8C%96%E7%9A%84%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95](https://github.com/kahowang/sensor-fusion-for-localization-and-mapping/tree/main/%E7%AC%AC%E5%8D%81%E7%AB%A0%20%E5%9F%BA%E4%BA%8E%E4%BC%98%E5%8C%96%E7%9A%84%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95)
 
 ## 1.环境配置：
 
@@ -65,9 +65,11 @@ VINS系列相关代码：滑动窗口部分
 
 ![image-20220319175400826](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11image-20220319175400826.png)
 
-注意的是，GeYao助教的公式推导和代码少了，位置残差对姿态的雅克比，以下为补充的推导。
+注意的是，GeYao助教的公式推导和代码少了，位置残差对姿态的雅克比，以下图一为补充的推导。以及姿态残差对i时刻的姿态的雅克比补充详细推导，如下图二所示。
 
 ![webwxgetmsgimg](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11webwxgetmsgimg.jpeg)
+
+![1638492414](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A111638492414.jpg)
 
 ##### c.代码补全
 
@@ -781,17 +783,29 @@ gps的主要作用个人认为主要有两个：1.消除行驶过程中累积误
 
 ### 5.7 点云匹配过程中，特征退化的现象(长廊、隧道)，有什么方法可以判断出来？（待补充）
 
-1.特征退化的场景(如长廊、隧道)，因为只有两侧的观测，可以对匹配的协方差矩阵进行特征值分解，通过判断特征值的分布状况判断。
+1.特征退化的场景(如长廊、隧道)，因为只有两侧的观测，可以对匹配的协方差矩阵进行特征值分解，通过判断特征值的分布状况判断，可参考 [LOAM SLAM原理之防止非线性优化解退化](https://blog.csdn.net/i_robots/article/details/108724606)，但loam里解决特征退化的方法，鲁棒性不强，需要通过不同的场景来设置阈值，实际中只有特征退化很明显的地方(长廊没有其他物体)，才好区分出是否发生特征退化。
 
 2.也可已增加imu uwb等辅助传感器。
 
-### 5.8 IMU上电的bias需要怎么估计？(待补充)
+### 5.8 IMU上电的bias需要怎么估计？在建图定位中，我们有必要做bias初始化吗，课程的框架是没给bias初始化的。(待补充)
 
-kitti数据集中貌似已估
+bias的估计，不同的传感器厂家标定方法不一样。课程中给定的初始bias为0，因为kitti数据集中已经默认补偿了bias。一般的传感器厂家，如果有定制需求，可以输出bias或者bias补偿后的accel、gyro数据，如果传感器只输出raw_data 可以参考 lio_mappping vins 的初始化bias的方法。民用级的MEMS惯导，bias的影响很大，尽量标定补偿一下。
 
-### 5.9 图优化 因子图 位姿图 概念（待补充） 
+### 5.9 惯导绕“8”字初始化的作用？VINS绕“8”字初始化的作用？
 
-### 5.10  SLAM 算法岗位应届生招聘要求
+**惯导**绕“8”字初始化，是为了imu初始对准，包括航向和bias。**VINS**是单目相机，初始化的时候需要估计重力方向和尺度，激光就不需要估计尺度了。
+
+### 5.10 图优化 因子图 位姿图 概念（待补充）
+
+### 5.11 边缘化先验因子移除老的帧过程中，为什么需要分两步？
+
+a.使用和要边缘话掉的量无关的因子，构建剩余变量对应的Hessian矩阵。
+
+b.挑出要和边缘化掉的量相关的因子，构建待边缘化的Hessian矩阵，并使用舒尔补做边缘化。
+
+分两步的原因：原话“基于kitti的实现原理 22:00" ,个人理解是，分开两部构建边缘化后的Hessian矩阵，可以将两部分解耦开来，解耦为，第一部分：与历史信息相关的信息矩阵 ；第二部分：仅与后续状态量相关的信息矩阵；两部分互不干扰，而第一部分也称为先验因子(factor_graph)。lio_mapping 中是分两部进行边缘化老的关键帧，VINS中使用一步更新Hessian矩阵。
+
+### 5.12  SLAM 算法岗位应届生招聘要求
 
 a.slam 的基础知识，前端匹配：icp ndt， 后端优化： 高斯牛顿法、LM优化
 

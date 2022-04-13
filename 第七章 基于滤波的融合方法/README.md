@@ -1210,7 +1210,13 @@ bool KITTIFiltering::SetInitGNSS(const Eigen::Matrix4f &gnss_pose) {
 | ![2021-10-12 12-32-51 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2012-32-51%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
 | ![2021-10-12 13-21-40 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-12%2013-21-40%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png) |
 
+## 6. 关于ESKF 的一些个人理解
 
+重温：[多传感器融合定位理论基础（八）：基于滤波的融合方法](https://leetcode-cn.com/problemset/all/)
+
+1.以误差作为状态量的滤波方法ESKF(Error state kalman filter)较为常用，“EKF尝试通过线性化来近似名义状态的变化，而EsKF则尝试通过线性化来近似误差状态的变化”。而使用位姿做更新的EKF方法也成为(名义方程)。在完成一次ESKF迭代后，有点需要主要的是：当有新的融合数据进来，要进行一次新的观测时，因为之前的状态量已经用来补偿了，因此需要清零，所以此时的 先验状态量 delta_x_k_hat = 0  。 变化的更新体现在观测上 delta_y  =  (预测值 - 观测值) 。
+
+​																																													edited by kaho 2021.10.12
 
 ​																																																					edited by kaho 2021.10.12
 

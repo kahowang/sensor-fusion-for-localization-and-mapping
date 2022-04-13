@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_18ace/fast"
+/usr/bin/make -f CMakeFiles/cmTC_18ace.dir/build.make CMakeFiles/cmTC_18ace.dir/build
+make[1]: 进入目录“/media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp”
+Building C object CMakeFiles/cmTC_18ace.dir/CheckSymbolExists.c.o
+/usr/bin/x86_64-linux-gnu-gcc-7    -o CMakeFiles/cmTC_18ace.dir/CheckSymbolExists.c.o   -c "/media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c"
+Linking C executable cmTC_18ace
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_18ace.dir/link.txt --verbose=1
+/usr/bin/x86_64-linux-gnu-gcc-7      CMakeFiles/cmTC_18ace.dir/CheckSymbolExists.c.o  -o cmTC_18ace 
+CMakeFiles/cmTC_18ace.dir/CheckSymbolExists.c.o：在函数‘main’中：
+CheckSymbolExists.c:(.text+0x1b)：对‘pthread_create’未定义的引用
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_18ace.dir/build.make:97: recipe for target 'cmTC_18ace' failed
+make[1]: *** [cmTC_18ace] Error 1
+make[1]: 离开目录“/media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp”
+Makefile:126: recipe for target 'cmTC_18ace/fast' failed
+make: *** [cmTC_18ace/fast] Error 2
+
+File /media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_95654/fast"
+/usr/bin/make -f CMakeFiles/cmTC_95654.dir/build.make CMakeFiles/cmTC_95654.dir/build
+make[1]: 进入目录“/media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp”
+Building C object CMakeFiles/cmTC_95654.dir/CheckFunctionExists.c.o
+/usr/bin/x86_64-linux-gnu-gcc-7   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_95654.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_95654
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_95654.dir/link.txt --verbose=1
+/usr/bin/x86_64-linux-gnu-gcc-7  -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_95654.dir/CheckFunctionExists.c.o  -o cmTC_95654 -lpthreads 
+/usr/bin/ld: 找不到 -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_95654.dir/build.make:97: recipe for target 'cmTC_95654' failed
+make[1]: *** [cmTC_95654] Error 1
+make[1]: 离开目录“/media/lory/528b0d15-4535-4e6b-842c-5644ad3e33ac/home/kaho/Desktop/多传感器融合定位第四期/第十章 基于优化的定位方法/catkin3_ws/src/lidar_localization/build/CMakeFiles/CMakeTmp”
+Makefile:126: recipe for target 'cmTC_95654/fast' failed
+make: *** [cmTC_95654/fast] Error 2
+
+
