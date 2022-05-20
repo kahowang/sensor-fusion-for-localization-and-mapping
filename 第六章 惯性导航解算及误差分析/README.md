@@ -162,9 +162,7 @@ void Activity::UpdatePosition(const double &delta_t, const Eigen::Vector3d &velo
 roslaunch imu_integration imu_integration.launch 
 ```
 
-![mid](/home/kaho/Pictures/chapter6/中值法解算/mid.png)
-
-
+![mid](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11mid.png)
 
 ## 2.姿态更新-基于欧拉法解算
 
@@ -186,7 +184,7 @@ bool Activity::GetVelocityDelta( )
 roslaunch imu_integration imu_integration.launch 
 ```
 
-![euler](/home/kaho/Pictures/chapter6/欧拉法解算/euler.png)
+![euler](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/深蓝多传感器融合定位/第二章激光里程计1%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11euler.png)
 
 ## 3.gnss-ins-sim仿真数据数据集，对比中值法和欧拉法得解算精度 
 
@@ -607,7 +605,7 @@ rosbag  play static.bag
 
 现象：groundtruth(红色)在原点不动，estimator(蓝色)竖直向上移动
 
-![2021-10-01 09-23-49 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-01%2009-23-49%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)
+![2021-10-01 09-23-49 的屏幕截图](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/深蓝多传感器融合定位/第二章激光里程计1%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A112021-10-01%2009-23-49%20%E7%9A%84%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE.png)
 
 解决：
 

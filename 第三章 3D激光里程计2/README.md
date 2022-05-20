@@ -57,7 +57,11 @@ sudo apt-get  install libgoogle-glog-dev
 
 #### 公式推导
 
-注意这里的推导形式是分别更新R ，t  ，与  直接更新转换矩阵T的导数会有所不同
+注意：
+
+1.这里的推导形式是分别更新R ，t  ，与  直接更新转换矩阵T的导数会有所不同
+
+2.线面残差是一个数，为标量，而待优化量位移、姿态等是具有方向、大小，是矢量，在 线面残差(标量)求对应待优化变量(矢量)的jacobian时，链式法则时，需要求 标量对矢量的偏导，标量对矢量的偏导是一个单位向量，代表矢量的单位方向。
 
 参考博客：[基于线面特征的激光里程计](https://zhuanlan.zhihu.com/p/348195351)
 
@@ -93,7 +97,7 @@ $$
 =\frac{\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)}{\left|\left(p_{i}^{\prime}-p_{b}\right) \times\left(p_{i}^{\prime}-p_{a}\right)\right|} \frac{\left(p_{a}-p_{b}\right)_{\times}}{\left|p_{a}-p_{b}\right|}
 \end{gathered}
 $$
-其中,
+其中,标量对矢量求导
 $$
 \quad \frac{\alpha|X|}{\alpha X}=\frac{\alpha\left(s \operatorname{qrt}\left(X^{T} X\right)\right)}{\alpha\left(X^{T} X\right)} \frac{\alpha\left(X^{T} X\right)}{\alpha(X)}=\frac{X}{|X|}
 $$

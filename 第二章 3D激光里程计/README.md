@@ -309,6 +309,18 @@ ICP_SVD:
     max_iter : 10
 ```
 
+### ICP补充
+
+经陈助教的指点，在进行ICP_SVD求解时，求出的旋转矩阵，可以进行reflection(旋转反射的判断)，KITTI场景中，数据集可能没有点云反射的现象，但是工程中，对求出的R阵加入reflection的判断，可以提升激光里程计ICP的精度。当出现需反射问题时：det(VU.tranpose()) = -1 ，正确的R阵为： det(VU.tranpose()) = 1。因此，我们可以将R阵改为如下通式：
+
+![image-20220424175530082](https://kaho-pic-1307106074.cos.ap-guangzhou.myqcloud.com/CSDN_Pictures/%E6%B7%B1%E8%93%9D%E5%A4%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E8%9E%8D%E5%90%88%E5%AE%9A%E4%BD%8D/%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%BF%80%E5%85%89%E9%87%8C%E7%A8%8B%E8%AE%A11image-20220424175530082.png) 
+
+参考论文：Least-Squares Rigid Motion Using SVD
+
+参考博客：[雷达系列论文翻译（二）：Least-Squares Rigid Motion Using SVD](https://blog.csdn.net/weixin_39061796/article/details/119861178)
+
+
+
 ## NDT_CPU
 
 参考源码： [autoware  ndt_cpu](https://github.com/Autoware-AI/core_perception/tree/master/ndt_cpu)
